@@ -1,0 +1,609 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="​    最近读了谷歌的分布式文件系统，感觉收获很大。这篇文章啃下来还有点费解的，还有一些具体的设计不是很明白，欢迎大家来讨论～ ​    论文地址">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读论文《the google file system》">
+<meta property="og:url" content="http://example.com/2021/11/13/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/the-google-file-system/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="​    最近读了谷歌的分布式文件系统，感觉收获很大。这篇文章啃下来还有点费解的，还有一些具体的设计不是很明白，欢迎大家来讨论～ ​    论文地址">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113211503784.png">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113211953197.png">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113212320611.png">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113212639926.png">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113212735148.png">
+<meta property="og:image" content="http://example.com/images/the-google-file-system/image-20211113212908421.png">
+<meta property="article:published_time" content="2021-11-13T13:12:33.000Z">
+<meta property="article:modified_time" content="2023-02-04T10:18:35.231Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/the-google-file-system/image-20211113211503784.png">
+  
+  
+  <title>读论文《the google file system》 - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="读论文《the google file system》">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-11-13 21:12" pubdate>
+        2021年11月13日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      8.2k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      69 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">读论文《the google file system》</h1>
+            
+            <div class="markdown-body">
+              <p>​    最近读了谷歌的分布式文件系统，感觉收获很大。这篇文章啃下来还有点费解的，还有一些具体的设计不是很明白，欢迎大家来讨论～</p>
+<p>​    <a target="_blank" rel="noopener" href="https://storage.googleapis.com/pub-tools-public-publication-data/pdf/035fc972c796d33122033a0614bc94cff1527999.pdf">论文地址</a></p>
+<span id="more"></span>
+
+
+
+<h2 id="系统总体设计"><a href="#系统总体设计" class="headerlink" title="系统总体设计"></a>系统总体设计</h2><h3 id="前提假设"><a href="#前提假设" class="headerlink" title="前提假设"></a>前提假设</h3><ul>
+<li><p>在分布式的文件系统里面，里面节点的硬件或者是其他一些资源都不会是质量很好，效率很高的（内存，CPU，磁盘，带宽等等）。虽然我们目标当然是用上最好的资源，但是这<strong>显然是一笔经济问题。</strong>因此，因为资源的限制，整个系统发生错误是在所难免的。<strong>为了提高系统的可用性，我们需要系统能够具备错误监视以及恢复的功能。</strong></p>
+</li>
+<li><p>分布式文件系统应该是<strong>针对大文件设计</strong>的，因此必须考虑如何在系统中更加有效地管理这些文件，作出一些优化。当然，小文件总是存在的，但是不应该过度设计算法去进行优化，这一点是从简化系统的设计进行考虑的，如果过度设计可能带来很多复杂的逻辑问题</p>
+</li>
+<li><p>从系统中读取文件，一般是两种场景。一个是，大段地连续读。另一个是，小段小段地读取。我们需要对其进行优化</p>
+</li>
+<li><p>针对文件的写入，我们要考虑如何处理并发写入的问题。并且写入的数据如何在副本之间进行复制。而且还要考虑系统的数据一致性问题，很显然如果强一致的话，会阻塞比较长的时间，这样用户体验其实不太好的。因此，需要根据CAP定理，权衡以及设计出一个比较合适的方案…</p>
+</li>
+</ul>
+<h3 id="系统结构"><a href="#系统结构" class="headerlink" title="系统结构"></a>系统结构</h3><p>​    参考谷歌文件系统的设计，系统中部署一个master节点用来存储文件的控制信息（文件名，访问权限，文件名映射chunks的表），多个chunkserver服务器用来具体存储文件的真实数据。</p>
+<p>​    为什么谷歌的这种设计，跟我们平常遇到的集群其实还是有很多的不一样。比如说，MySQL集群通常采用的是一主二从的设计，并且它所有的节点，存储的东西其实是几乎一样的。</p>
+<p>​    但是谷歌的文件系统中，它是把文件的控制信息和数据分别存放在两个地方。除此以外，设计者并没有对master进行去中心化的操作。我想设计者可能是权衡了系统的容错和高性能之间作出的选择吧。虽然如此，我们也可以给master设计一些优化，让它尽可能地有更高的容错性。这个部分放到后面说。</p>
+<p><img src="/../../images/the-google-file-system/image-20211113211503784.png" srcset="/img/loading.gif" lazyload alt="image-20211113211503784"></p>
+<p>​    先简单介绍一下，上面结构的一些概念。</p>
+<p><strong>控制信息 metadata</strong></p>
+<p>​    上面提到了，在这个结构中，文件的控制信息和数据是分开进行存放的。控制信息有很多，比如说chunk的位置，版本号，某个chunk的访问权限，文件有哪些chunk……</p>
+<p>​    但是实质上，主要是两个mapping。</p>
+<ul>
+<li><p>文件名 — chunks的映射表：通过该表，我们可以查询到一个文件里面它由哪些chunk组成</p>
+</li>
+<li><p>Chunk — chunk位置的映射表：为了提高系统容错性，必然是需要对每一个chunk做备份的。因此，必须记录每个chunk及其备份到底部署到哪台机器上面，这样方便快速定位</p>
+</li>
+</ul>
+<p><strong>chunk 和 chunkserver</strong></p>
+<p>​    在上面的前提假设中提到，系统中存储的文件往往是很大很大的，很难一次部署到一台机器上。那么就需要把文件切分为若干个大小相等的unit，这个就称为chunk。</p>
+<p>​    然后每个chunk的大小是64MB。这样做的好处就是能够减少系统和master压力，如果chunk的大小太小的话，访问同样大小的文件，必然要多次与chunkserver进行网络io；并且master也会花更多的内存去存储chunk的信息（因为chunk_size越小的话，每个文件的chunk就会越多）</p>
+<p>​    然后每个chunk就保存在不同的chunkserver里面，chunkserver实际上就是一个运行了LINUX_FILE_SYSTEM的服务器。能够帮助我们读取对应的chunk。</p>
+<p><strong>Single Master</strong></p>
+<p>​    GFS采取了单主节点的设计。单master就意味着整个系统的中心化，就意味着整个鲁棒性不够强。因为很显然，当master宕机了，没有其他节点能够接手它的工作，会导致系统的停摆。</p>
+<p>​    但是这种单master的设计会提高系统的性能。因为在各种分布式相关的问题上，核心其实就是让节点之间达成某种共识。由于，消息在网络中传递总是会发生错误的，因此要让节点达成共识，需要用到比较复杂的算法。例如，2PC，TCC这些算法。</p>
+<p>​    因此，我们不应该抛开场景去谈技术选型。在设计分布式系统时，应该考虑使用场景。在谷歌分布式文件系统的论文中，系统的效率是反复提及的一个关键字。可能设计者权衡高容错性和高效率之间选择了高效率，从而没有采用去中心化的设计。</p>
+<p>​    但是这并不意味着，我们不能对它的设计进行优化。即使是单主节点，中心化的设计，我们仍旧可以有一些手段去提高它的容错性。尽量降低，master宕机的风险。这个放到后面的章节详细说</p>
+<p><strong>系统的数据一致性保障</strong></p>
+<p>(1)系统保证master上的数据是一致的</p>
+<p>​    对于master上面的控制信息，它的完整性很好保证，因为这些数据是部署到一台服务器上面的。因此很好操作。只需要一个 operation log 和 check point就能保证数据的一致性和完整性。这个放到后面的章节说</p>
+<p>(2)对于文件的数据修改</p>
+<p>​    在数据一致性方面，GFS并没有提供太多的一致性保障。它仅仅保障了，在一个chunk上面一次提交的记录是完整的。这个具体是怎么做的，放到后面说。</p>
+<p>​    每一次对chunk进行，它可能进入到以下三种状态的其中之一：</p>
+<p><img src="/../../images/the-google-file-system/image-20211113211953197.png" srcset="/img/loading.gif" lazyload alt="image-20211113211953197"></p>
+<ul>
+<li><p>客户端如果从一个chunk的副本中进行读取，读取到的内容不同的话。那么这部分称它为<strong>不一致的(Inconsistent)</strong></p>
+</li>
+<li><p>如果客户端从哪一个副本里面都是读取到一样的内容，那么<strong>这部分文件就是一致的（consistent）</strong></p>
+</li>
+<li><p>如果客户端都能看到上一次修改的完整内容，那么我就说这部分文件是<strong>确定的(Defined)</strong></p>
+</li>
+</ul>
+<h2 id="系统的交互细节"><a href="#系统的交互细节" class="headerlink" title="系统的交互细节"></a>系统的交互细节</h2><p>​    在设计工作中提到，在分布式系统中如果把控制信息和文件数据分开来存储，其实是一种很巧妙的设计。</p>
+<p>​    也是基于这种思想，想要尽量少让master节点参与到真正的数据流动中，更想让他仅仅是处理和维护关于整个系统的控制信息。为了达成这个目的，需要设计一些额外的机制去进行保证。</p>
+<h3 id="Primary的数据变更"><a href="#Primary的数据变更" class="headerlink" title="Primary的数据变更"></a>Primary的数据变更</h3><p>​    在系统中的每一个chunk，都做了两个备份。也就是说，同一个chunk，在整个系统的角度来看，都是保存了三份。这也就意味着，如果要保证数据的一致性，需要我们在一个chunk上面做了数据变更，需要把这个便更到别的地方。</p>
+<p>​    这个问题，在顺序请求的情况下其实很容易处理同步，只需要把每个数据变更同时写到所有副本里面就可以了。这样就能保证，每个副本的数据都是一致的。</p>
+<p>​    但是，在分布式文件系统中，并发写入的场景是大量存在的，如果不做任何优化的话，很容易造成数据不一致的问题。如下图，举个简单的例子。</p>
+<p><img src="/../../images/the-google-file-system/image-20211113212320611.png" srcset="/img/loading.gif" lazyload alt="image-20211113212320611"></p>
+<p>​    此时，两个客户端想同时对一个chunk进行追加写操作。一般情况的处理，就是客户端同时把追加记录写入到所有副本中。但是并发请求的情况下这就会带来很多问题。我们假设client1写入的记录是记录1，同理client2是记录2。</p>
+<p>​    我们知道，网络环境总是不稳定的。数据包在网络中的传递总是会有延迟的，<strong>因此我们无法保证，所有的副本都是以同样的顺序收到客户端传来的记录</strong>。</p>
+<p>​    问题的关键找到了，也就是说如果系统能够有某些机制，能够确保所有副本都是以相同的顺序来处理请求，那么即使并发的情况下，也是能够保证数据的一致性的。</p>
+<p>​    如何保证数据的按照同样的顺序被处理，这里提出两种解决方案，首先说明一下这两种方案实质上并没有什么优劣之分，都是很好的分布式方案，只是看场景进行选择罢了。</p>
+<p><strong>方案一：消息队列</strong></p>
+<p>​    我们的目标就是让所有节点按照顺序处理某一个请求。那么就很容易想到用消息队列去进行处理了。因为消息队列里面的消息，本来就是有序的！</p>
+<p>​    只需要创建一个多生产者的消息队列，然后生成一个主题，让所有相关的chunk都去订阅该主题。</p>
+<p>​    这样，所有的副本都能够以相同的顺序去处理请求了。那么最后的结果就是，所有的副本上的数据都会收敛到一致。</p>
+<p><strong>方案二：租约</strong></p>
+<p>​    其实这种方案是参考MySQL集群是如何同步数据的，在MySQL集群中，同步数据实质上是依靠master给出的binlog。其他slave节点就严格按照binlog的顺序去执行，update自身的记录。</p>
+<p>​    因此，在分布式文件系统中也可以借鉴这种思想。在进行数据变更的时候，从所有副本上，挑选出一个让它成为primary。其他副本就严格，执行primary传送过来的顺序。</p>
+<p>​    具体步骤是这样的：</p>
+<ul>
+<li><p>一个client想对某个chunk做数据变更，那么就会向master进行请求</p>
+</li>
+<li><p>master检查该chunk的所有副本是否存在primary。如果没有，选出一个并赋予其一个lease（租约，60s），在这段时间内让该chunk成为primary。并把所有副本，以及primary返回给client。</p>
+</li>
+<li><p>client向距离它最近的chunk发送数据（这些数据并不会立即写入，而是先缓存在本地）。chunk再沿着链路把数据蔓延的所有副本。</p>
+</li>
+<li><p>此时primary必然是收到了，primary按照他的写入顺序把决策通知到其他副本。</p>
+</li>
+<li><p>副本接收到后primary发来的信息后，再把本地缓存中的部分数据写入到对应的chunk中。</p>
+</li>
+</ul>
+<p><img src="/../../images/the-google-file-system/image-20211113212639926.png" srcset="/img/loading.gif" lazyload alt="image-20211113212639926"></p>
+<p>​    基本上，通过这两种方案就能够解决大部分并发写入的问题。但是，很多情况下，为了提高数据的容错性或者说提高高可用性。往往会对整个集群做一个备份，形成一个数据中心。这时候，可以把不同的数据中心部署在不同的地方，提高异地容灾还有访问效率。</p>
+<p>​    因此，数据中心之间的数据也需要进行同步。由于篇幅的限制，这部分没办法展开说明。我这里提供一个思路，其实数据中心如何让数据收敛到一致，还是需要一个确定的顺序，因此我们可以根据数据的写入时间，做一个顺序。这样，还是能使所有的数据收敛到一致。</p>
+<h3 id="原子提交"><a href="#原子提交" class="headerlink" title="原子提交"></a>原子提交</h3><p>​    在总体设计思想里提到过，GFS并没有提供很强的数据一致性保障。GFS保证的是，对每个副本每一次写入，只有成功和失败两种（不存在每条数据仅写入一半的情况）。</p>
+<p>​    GFS不保证所有副本的数据是一致的，这似乎跟上一小节提到的数据同步有点冲突。确实，如果严格按照上面的做法，是能够做到数据的强一致性。但还是那句话，不能抛开场景去谈技术选型。如果是某种关于资金的系统，确实是需要数据强一致性的要求，但GFS不是这种系统，在论文中反复提到GFS是一个极其注重效率，因此放松了对一致性的要求。<em><strong>*仅保证了，每次写入只有成功和失败两种状态。*</strong></em></p>
+<p><img src="/../../images/the-google-file-system/image-20211113212735148.png" srcset="/img/loading.gif" lazyload alt="image-20211113212735148"></p>
+<p>​    现在，想要对某个chunk追加三条记录A,B,C。假设primary是第一个副本。因为写入的顺序是由primary决定的（其实可以理解为某个记录写在chunk的哪个地方）。</p>
+<p>​    第二个副本，写入记录B的时候失败了，因此这个空间就空了出来。并回复一个error给客户端，然后客户端就会对该请求进行重试。最后就变成了如上图这样的结果。</p>
+<p>​    这种稍微放松数据一致性的设计，带来了性能上的显著提升（因为2PC，TCC的强分布式事务方案，十分影响性能，一般开发中除非是很重要很重要的节点，不然很少会采用该方案）。但这就需要客户端进行配合，它需要客户端在读取数据的时候能够容忍，或者设计方案过滤掉这些重复的数据。</p>
+<p>​    总而言之，这是一个权衡效率还有一致性之后得出的结果。对其他分布式的系统也有比较好的借鉴意义。</p>
+<h2 id="Master的作用"><a href="#Master的作用" class="headerlink" title="Master的作用"></a>Master的作用</h2><p>​    在GFS中master节点作用，让我有种“统筹规划”的感觉。大部分关于系统全局的决策，都是master去执行。因为，master存储了整个系统的控制信息，有了这些能够让它判断当前情况下的局部最优解。</p>
+<h3 id="Master上的并发控制"><a href="#Master上的并发控制" class="headerlink" title="Master上的并发控制"></a>Master上的并发控制</h3><p>​    在GFS中，很多在master上面执行的操作，它的耗时其实还是挺长的。比如说：创建快照的操作，虽然它是采用了写时复制COW的策略。复制之前要撤销所有chunkserver上面的租约。</p>
+<p>​    因为，操作耗时很长并且请求操作频繁，设计者为了提高效率，并不希望在master上面的操作是串行执行，这会导致比较严重的头阻塞现象。因此，设计者把很多操作设计成了并发。这就涉及到了如何进行master上的并发处理了。</p>
+<p>​    但是，这要跟上面提到的chunk副本的并发写入区分开来。chunk的并发写入，关键问题其实是在于如何找到一个确定的顺序，让所有副本都严格按照该顺序进行写入。而master的并发控制，<strong>其实关键问题在于共享资源的争夺</strong>。</p>
+<p>​    因此，在master中的资源竞争，更加以来锁机制。先来看一下，master中的namespace（存储控制信息的数据结构）是怎么设计的。</p>
+<p><img src="/../../images/the-google-file-system/image-20211113212908421.png" srcset="/img/loading.gif" lazyload alt="image-20211113212908421"></p>
+<p>​    它这里跟传统的设计有少许不一样。因为master想要把尽可能多的控制信息一次塞入内存中。它的namespace采用了压缩树的设计。<strong>就是根据前缀不断地进行压缩。</strong>然后树上的节点就是控制信息了。（其实这里只需要知道，namespace是一种多叉树的结构）</p>
+<p>​    了解了它的数据结构之后，就可以针对它设计并发控制了。每次对master进行操作时，只需要在对应的那部分namesapce神奇读写锁。这个可以由自己编写的程序进行控制。</p>
+<p>​    有了这个机制之后，就可以同时在namespace上面执行多个操作了。这显然提高了系统的性能在一定程度上也让系统更合理（比如说，你对文件的读写，显然不希望写的时候有读操作之类的，并且通过锁也可以控制并发写入的数量）</p>
+<h3 id="chunk副本的创建"><a href="#chunk副本的创建" class="headerlink" title="chunk副本的创建"></a>chunk副本的创建</h3><p>​    每个chunk副本产生无外乎三种原因：新chunk的创建，特殊情况发生需要对副本重新复制，动态平衡（让服务器的负载更均匀）。</p>
+<p>​    master决定是否要创建一个chunk副本，并且它决定把该副本初始化到哪一个chunkserver上面。因为，master掌握系统的全局信息，根据这些全局信息，能够让它作出决策到底在哪里放置这个chunk。</p>
+<p>​    为了让系统的负载更加均衡，master一般考虑以下因素（这些因素都可以从master存储的控制信息中统计得到）：</p>
+<ul>
+<li><p>把新的chunk副本<strong>部署到磁盘空间利用率比较低的chunkserver</strong>上面。这样可以平衡服务器的负荷。</p>
+</li>
+<li><p>不希望一台服务器上有太多new init chunk，避免new chunk的数量超过一个阈值。因为在实际情况中，一个new chunk往往意味着频繁的写入。只有它被写满的情况下才会处于read-only状态。因此，要降低它们的数量，平衡服务器的负载。</p>
+</li>
+<li><p>为了保证高可用性，尽量让数据不要在一个子网内，或者说不要让chunk副本过于集中在同一个物理位置。</p>
+</li>
+</ul>
+<p>​    为了保证数据的高可用性，当整个系统中副本的数量小于系统规定的阈值时，master会从存活的副本中，取出一个，然后复制并部署。</p>
+<p>​    那么这就产生一个问题，如何在存活的副本中选取呢？一般基于以下因素进行考虑：</p>
+<ul>
+<li><p>版本号越新的chunk，优先级越高</p>
+</li>
+<li><p>为了减轻复制失败的影响，提高那些正在阻塞客户端请求的chunk的优先级</p>
+</li>
+</ul>
+<p>​    综合考虑上述因素之后，master就会选出一个优先级最高的chunk进行克隆。</p>
+<p>​    最后，为了保证服务器上的负载均衡。master会定期把某些chunk从负载高的服务器移动到负载低的服务器上面。</p>
+<h3 id="控制chunk的删除"><a href="#控制chunk的删除" class="headerlink" title="控制chunk的删除"></a>控制chunk的删除</h3><p>​    分布式的文件系统，跟内存空间一样往往存在很多碎片。为了提高空间的利用率，必须有一个比较合适的算法对这些进行收集，不然如果出现类似内存泄漏的错误，最终导致我们的系统变得十分低效。</p>
+<p>​    在GFS中，它的回收策略设计十分巧妙，它使整个系统变得更简单并且可靠。设计者可能是借鉴了Redis中的垃圾回收策略，采用了一种“懒回收”的思想，一定程度上提高了系统的性能</p>
+<p><strong>具体操作</strong></p>
+<p>​    当客户端调用了一个接口进行删除文件的操作，master并不会真的马上进行删除。<strong>master首先会在operationlog里面记录下这个删除操作，然后在对应的namespace空间里作出相应的举动，然后再把该文件（或者说chunks）的删除时间记录下来，仅此而已</strong>。</p>
+<p>​    这时候我们可以说，该文件已经被“删除”了。文件已经被隐藏起来，外界无法通过master对该文件继续进行访问。</p>
+<p>​    等到时机合适的时候（整个系统相对空闲，CPU负载不高，或者定期清理），master通过HREATBEAT通讯信号与所有chunkserver进行沟通。master与chunkserver比对，看看什么chunk没有，没有的就进行删除，通知存储这些隐藏chunk的chunkserver执行真正的删除操作。</p>
+<p>​    这种做法带来许多的好处：</p>
+<ul>
+<li><p>能够提高系统的相应速度，让系统先专注处理眼前的请求，等到相对空闲的时候再进行删除。这会让客户端的体验好很多。</p>
+</li>
+<li><p>显然，这种攒一波再处理的方式，有点类似Kafka的消息推送处理。这在一定程度上也是可以提高系统处理垃圾的速度，因为频繁的切换工作线程和处理线程必然会带来很多开销。</p>
+</li>
+<li><p>这种lazily-delete的机制，显然有一定时间的后悔期的。万一用户误删了数据，显然是能够撤回这个操作的。</p>
+</li>
+<li><p>在分布式系统上，错误是经常发生的，有可能有些chunk在某个server上面，但是master并不知道。因此，通过这种定期扫描和比对，可以删除掉那些不被master记录下来的chunk。</p>
+</li>
+</ul>
+<p><strong>处理不可用的chunk</strong></p>
+<p>​    master还有另外一个作用，就是处理不可用的chunk（其实这也算一种垃圾回收，不过分开来讲）。</p>
+<p>​    在分布式系统中，错误在所难免。如果在更新版本号的时候chunkserver宕机了，没有更新成功那么该chunk就会变得不可用…或者说，chunkserver上的磁盘。总之，总会有一些意外发生导致chunk不可用，这时候就要对其进行清理了。（会server上面会通过校验和&#x2F;跟master比对版本号等操作确认该chunk是否发生意外）。</p>
+<p>​    master确认该chunk变得不可用之后，变会启动一次删除操作，并且re-replica操作。保证系统中的数据高可用。</p>
+<h2 id="系统的容错性"><a href="#系统的容错性" class="headerlink" title="系统的容错性"></a>系统的容错性</h2><p>​    构建分布式系统最大的挑战之一就是如何建立一个高容错的系统，在前面的总体设计中提到。构成分布式集群的机器，通常都不会采用最好的资源。因此，在整个系统中错误是必然发生的。<br>​<br>​    这导致我们不能够完全相信机器，因此需要采取一些特殊的机制去保障我们的系统能够在错误必然发生的情况下还能提供服务。</p>
+<h3 id="提高系统的可用性"><a href="#提高系统的可用性" class="headerlink" title="提高系统的可用性"></a>提高系统的可用性</h3><p>​    GFS通过下面两种机制，提高系统的可用性：快恢复和数据备份。</p>
+<p><strong>快恢复</strong><br>​    不管是master还是所有的chunkserver，所有节点都会定时的对自身进行一次全量备份。防止意外发生的情况下，出现数据丢失。</p>
+<p>​    但仅仅做到这一步还是不够，因为它仅能恢复到上一次备份的时间节点上面。因此，想要节点崩溃前的状态还需要另一种机制进行支撑。节点需要把每次发生的数据变更记录到日志里面，并且在真正执行变更前，先进行日志的提交（log ahead write原则）。</p>
+<p>​    然后通过全量备份和log，就可以把节点恢复到任意的时间点。这里是借鉴了innodb的crash-safe机制还有redis中的aof和rdb备份方式。</p>
+<p><strong>数据备份 — master备份</strong></p>
+<p>​    chunk的备份就不说了，上面的技术细节已经讲的很详细了。这里想要讨论的是master的备份。</p>
+<p>​    上面的总体设计提到，为了提高整个系统的效率，对master采用了中心化的思想。也就是说全局的控制信息就只有单节点master进行提供。这种设计使得系统效率很高，但是降低了容错性。</p>
+<p>​    虽然如此，还是可以给Master加上一些保险措施，减少它宕机的风险。为了提高系统的容错性，设计者采取了 log 和 checkpoint 的办法。在每次变更操作前，都先写入日志。然后我猜测，这个日志应该是循环写的，因此设置一checkpoint（参考我之前mysql的文章）。只要这个日志写满了，就进行刷盘，把当前的数据都持久化到硬盘。</p>
+<p>​    因此，如果master宕机了。可以通过log还有checkpoint进行恢复，把磁盘里的备份拿出来，重放一次log里面的操作。为了进一步提高系统的容错性，这些log不仅仅存在master上，还会存储在其他机器上面，这些机器称为”shadow“。值得注意的是，这跟raflt中主节点挂了，选出一个新的主节点不同。这个shadow，只能负责读取的功能，不能对数据做修改。</p>
+<p>​    在某种程度上来说，单master如果挂了，还是需要人工介入进行修复。虽然GFS已经通过各种措施去提高，但还是不能完全解决问题，仍旧有一点点缺陷。但是，我想这个应该是提高系统性能的代价吧。如果针对master再做一个集群的话，可能会带来比较复杂的共识问题，这应该是设计者权衡之后作出的选择吧。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a>
+                    
+                      <a class="hover-with-bg" href="/categories/MIT6-824/">MIT6.824</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/11/19/%E5%B7%A5%E4%BD%9C%E7%BB%8F%E9%AA%8C%E7%9B%B8%E5%85%B3/error-review/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">故障反思</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/message-queue-part-1/">
+                        <span class="hidden-mobile">消息队列学习笔记 - 1</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

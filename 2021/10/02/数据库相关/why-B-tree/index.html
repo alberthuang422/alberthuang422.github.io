@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="​    数据库的索引，我想都并不陌生，简单来说，索引的出现就是为了帮助更快的进行查询。索引就像书的目录一样，帮助你快速定位想要的章节所在的地方。 ​    索引能用的数据结构有很多，hash，有序数组，二叉树平衡树，红黑树，B树，B+树……但是为什么innodb引擎，最后选择B+树作为索引？下面我们来聊聊索引的各种优缺点 Hash索引​    索引 - 记录所在的位置，实质上很像很像一种 K-V">
+<meta property="og:type" content="article">
+<meta property="og:title" content="why B+ tree?">
+<meta property="og:url" content="http://example.com/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/why-B-tree/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="​    数据库的索引，我想都并不陌生，简单来说，索引的出现就是为了帮助更快的进行查询。索引就像书的目录一样，帮助你快速定位想要的章节所在的地方。 ​    索引能用的数据结构有很多，hash，有序数组，二叉树平衡树，红黑树，B树，B+树……但是为什么innodb引擎，最后选择B+树作为索引？下面我们来聊聊索引的各种优缺点 Hash索引​    索引 - 记录所在的位置，实质上很像很像一种 K-V">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/0c/57/0c62b601afda86fe5d0fe57346ace957.png">
+<meta property="og:image" content="http://example.com/images/why-B-tree/1635774550939.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/04/68/04fb9d24065635a6a637c25ba9ddde68.png">
+<meta property="article:published_time" content="2021-10-02T14:47:37.000Z">
+<meta property="article:modified_time" content="2023-02-04T10:19:12.950Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/0c/57/0c62b601afda86fe5d0fe57346ace957.png">
+  
+  
+  <title>why B+ tree? - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="why B+ tree?">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-02 22:47" pubdate>
+        2021年10月2日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.2k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      19 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">why B+ tree?</h1>
+            
+            <div class="markdown-body">
+              <p>​    数据库的索引，我想都并不陌生，简单来说，索引的出现就是为了帮助更快的进行查询。索引就像书的目录一样，帮助你快速定位想要的章节所在的地方。</p>
+<p>​    索引能用的数据结构有很多，hash，有序数组，二叉树平衡树，红黑树，B树，B+树……但是为什么innodb引擎，最后选择B+树作为索引？下面我们来聊聊索引的各种优缺点</p>
+<h2 id="Hash索引"><a href="#Hash索引" class="headerlink" title="Hash索引"></a>Hash索引</h2><p>​    索引 - 记录所在的位置，实质上很像很像一种 K-V结构。那么哈希表是对这种结构的检索效率是很高的。</p>
+<p>​    下面，我从使用的角度来简单分析一下这种数据结构。</p>
+<p>​    </p>
+<p>​    哈希表是一种以 K - V 键值对来存储数据的数据结构。插入的时候根据key值，算出该键值对所在的数组位置。然后从该位置拉出一个链表，然后进行插入。</p>
+<p><img src="https://static001.geekbang.org/resource/image/0c/57/0c62b601afda86fe5d0fe57346ace957.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<span id="more"></span>
+
+<h3 id="缺点一"><a href="#缺点一" class="headerlink" title="缺点一"></a>缺点一</h3><p>​    这种数据结构做索引有个比较明显的缺点：<strong>hash冲突</strong>，对于hash表这种数据哈希冲突在所难免，这也是hash索引影响性能的一个原因。</p>
+<p>​    不妨假设一个这样的场景，100w条记录的数据库因为hash冲突比较严重，需要进行扩容。一般来说，扩容有两种方案 (1)直接扩容 (2)渐进式rehash。</p>
+<p>​    我的想法是，两种扩容方法对于这个量级的数据库来说都不太好。</p>
+<ul>
+<li>方案一，<strong>同步阻塞的时间过长了</strong> </li>
+<li>对于方案二，因为rehash是需要<strong>fork一个子进程来进行rehash，这必然在一定程度上影响CPU的性能</strong>。</li>
+</ul>
+<h3 id="缺点二"><a href="#缺点二" class="headerlink" title="缺点二"></a>缺点二</h3><p>​    范围查询不友好，这点放在B树B+树说。对范围查询友好的索引，一般来说只有这两个。</p>
+<p><strong>Q:如果采用SSD，检索&#x2F;IO很快，hash索引的范围查询时间会和B+树差不多嘛？</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><pre><code class="hljs bash">我个人觉得不会，举个查询age在18~60的范围查询。<br>首先，我们要明确一件事<span class="hljs-built_in">hash</span>函数，只能对一个key进行哈希。不能对 两个（若干个）key之间的间隙进行<span class="hljs-built_in">hash</span>，也就是说 18~60，哈希函数只能 <span class="hljs-built_in">hash</span>(18)..<span class="hljs-built_in">hash</span>(19)..<span class="hljs-built_in">hash</span>(20)....<span class="hljs-built_in">hash</span>(60)。<br>它不能直接<span class="hljs-built_in">hash</span>(18~60)。因此从这点来说，我觉得<span class="hljs-built_in">hash</span>索引即使采用SSD，它的范围查询效率还是很难让人接受的。而且我举得例子还是整形的情况，如果该字段是浮点数类型，那么就要从浮点数的最小精度开始枚举，这种开销显然十分巨大。<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="缺点三"><a href="#缺点三" class="headerlink" title="缺点三"></a>缺点三</h3><p>​    个人觉得，hash索引的并发度不会太好。以下，仅讨论 <strong>间隙锁（范围锁）</strong>。为什么这么说呢？其实从他的结构上我们就可以看出来</p>
+<ul>
+<li><p>hash索引在数据的组织上，并没有逻辑上的有序，因此没办法向B+树那样直接加锁。并且对于空的记录，没办法锁</p>
+</li>
+<li><p>这锁加在哪里？加在节点上吗？那么第一步是要对范围内的记录进行查询，上面已经说了，哈希索引对范围查询不友好，因此不行。</p>
+</li>
+<li><p>锁加在链表（数组），这样加锁的话，显然不行，因为该链表上的数据不是所有的节点都符合加锁的条件的。</p>
+<p>因此，考虑以上原因，hash索引的并发性真的不够强。</p>
+<p>   所以，<strong>哈希表这种结构适用于只有等值查询的场景</strong>，比如 Memcached 及其他一些 NoSQL 引擎。 对于redis来说哈希是一个很重要的数据结构。</p>
+</li>
+</ul>
+<h2 id="有序数组索引"><a href="#有序数组索引" class="headerlink" title="有序数组索引"></a>有序数组索引</h2><p><img src="/../../images/why-B-tree/1635774550939.png" srcset="/img/loading.gif" lazyload alt="1635774550939"></p>
+<p>​    有序数组很简单，就是拿数组进行存储。但是这个存储是有条件的：<strong>插入的数据必须是严格自增的</strong>。如果你插入了 1，10。那么下一条的数据只能大于10，不能插入9。</p>
+<p>​    为什么要这样？<strong>原因很简单，避免空间的浪费。</strong></p>
+<p>​    并且，这种索引的查询效率很好，因为可以用到二分查找。因为在存储的时候逻辑上是有序的，因此它范围查询也很好。</p>
+<p>​    <strong>因此，只要它的场景符合，插入的数据都是严格自增的，那么就可以采用这种索引。</strong></p>
+<h2 id="二叉树索引"><a href="#二叉树索引" class="headerlink" title="二叉树索引"></a>二叉树索引</h2><p>​    这里就不说普通的二叉树了，因为普通的二叉树可能会出现树高不平衡的问题。下面所说的树都是平衡树。</p>
+<p><img src="https://static001.geekbang.org/resource/image/04/68/04fb9d24065635a6a637c25ba9ddde68.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>​    这种数据结构的特点，不管是对于查找还是插入都十分友好。并且不像<strong>有序数组索引那样，要求索引字段必须是严格自增的。</strong></p>
+<p>​    理论上，二叉树的效率是很高的，但是为什么实际上数据库的存储都不使用二叉树？<strong>这个问题的答案是因为，一般来说索引很大，不可能只存在于内存上，一定要写入磁盘里面。</strong></p>
+<p>​    我们可以假设一个场景，100万条记录的表，它的二叉树高大概在20左右。我们知道在磁盘中，以块来存储的。那么查询一条数据，最坏的情况就是<strong>20 x 10ms &#x3D; 200 ms。</strong>这个查询速度难以让人接受。</p>
+<h2 id="为什么使用N叉树"><a href="#为什么使用N叉树" class="headerlink" title="为什么使用N叉树"></a>为什么使用N叉树</h2><p>​    为了让一个查询尽量地少读磁盘，就必须让查询的过程中尽量少访问数据块。为了减少磁盘的IO，不妨考虑以下N叉树。</p>
+<p>​    为什么要用N叉树，我们看N叉树的节点，一个节点存储多条数据，而且每个节点内的数据在逻辑上都是有序的。而数据块，也是存储多个数据。<strong>那么，我们可以不可以把数据块抽象成N叉树的节点呢？</strong>答案是，这种做法完全可行。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs verilog">以InnoDB为例，磁盘和内存交互的单位大小是<span class="hljs-number">16</span>KB。假设，只有一个索引字段（bigint）的情况下，我们看看可以存储多少个记录，而且树高是多少。<br>索引字段bigint 占<span class="hljs-number">8</span><span class="hljs-keyword">byte</span> 和 <span class="hljs-number">6</span>Byte指向下一页的指针 （为什么是<span class="hljs-number">48</span><span class="hljs-keyword">bit</span>，因为目前<span class="hljs-number">64</span>位的硬件实际上只能支持<span class="hljs-number">256</span>TB，因此只需要<span class="hljs-number">48</span><span class="hljs-keyword">bit</span>来寻址）<br>所以 N = <span class="hljs-number">16</span>KB / <span class="hljs-number">14</span>B ≈ <span class="hljs-number">1200</span>。因此每页能存放<span class="hljs-number">1200</span>条记录（该记录不是真的记录，只是用来方便查找的）。<br>一般来说，B+树树高为<span class="hljs-number">4</span>,那么最多存储 <span class="hljs-number">1200</span>^<span class="hljs-number">3</span> = <span class="hljs-number">17</span>亿条数据。也就是说，从<span class="hljs-number">17</span>亿数据中，只需要三次查盘就可以了。<br></code></pre></td></tr></table></figure>
+
+<p>​    OK，所以我们不使用二叉树作为我们的索引，是因为磁盘适配性。总的来说，采用B+树来个人感觉只是它的普适性最强，在各种各样的场景中都还有不错的效率。</p>
+<p>​    但是，如果针对特殊的场景的话，我们还是可以选择其他索引的。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/MySQL/">MySQL</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/02/data-transfer-server/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">浅谈数据迁移的方案</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/">
+                        <span class="hidden-mobile">浅谈数据库的锁(一)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

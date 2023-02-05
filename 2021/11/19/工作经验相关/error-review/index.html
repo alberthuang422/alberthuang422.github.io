@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="安全问题​    最近看了很多运营事故的复盘，让我有种后背发凉的感觉。因为自己在公司实习的时候，在线上环境的操作都是很随意的。并没有每一步按照流程进行执行，试过了很多的危险操作，至今还没出事属实是侥幸。 案例一：生产环境中执行危险脚本​    这是最近学校工作室发生的一起事故。事故的北京是这样的，工作室的师弟，手滑在正式环境上面误跑了“重新部署”的脚本。导致了，重要数据以及日志全部被删除。而且，对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="故障反思">
+<meta property="og:url" content="http://example.com/2021/11/19/%E5%B7%A5%E4%BD%9C%E7%BB%8F%E9%AA%8C%E7%9B%B8%E5%85%B3/error-review/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="安全问题​    最近看了很多运营事故的复盘，让我有种后背发凉的感觉。因为自己在公司实习的时候，在线上环境的操作都是很随意的。并没有每一步按照流程进行执行，试过了很多的危险操作，至今还没出事属实是侥幸。 案例一：生产环境中执行危险脚本​    这是最近学校工作室发生的一起事故。事故的北京是这样的，工作室的师弟，手滑在正式环境上面误跑了“重新部署”的脚本。导致了，重要数据以及日志全部被删除。而且，对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/%E6%95%85%E9%9A%9C%E5%A4%8D%E7%9B%98/image-20211119232724108.png">
+<meta property="article:published_time" content="2021-11-19T14:24:31.000Z">
+<meta property="article:modified_time" content="2023-02-04T10:15:09.756Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/%E6%95%85%E9%9A%9C%E5%A4%8D%E7%9B%98/image-20211119232724108.png">
+  
+  
+  <title>故障反思 - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="故障反思">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-11-19 22:24" pubdate>
+        2021年11月19日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.5k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      13 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">故障反思</h1>
+            
+            <div class="markdown-body">
+              <h3 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h3><p>​    最近看了很多运营事故的复盘，让我有种后背发凉的感觉。因为自己在公司实习的时候，在线上环境的操作都是很随意的。并没有每一步按照流程进行执行，试过了很多的危险操作，至今还没出事属实是侥幸。</p>
+<h4 id="案例一：生产环境中执行危险脚本"><a href="#案例一：生产环境中执行危险脚本" class="headerlink" title="案例一：生产环境中执行危险脚本"></a>案例一：生产环境中执行危险脚本</h4><p>​    这是最近学校工作室发生的一起事故。事故的北京是这样的，工作室的师弟，手滑在正式环境上面误跑了“重新部署”的脚本。导致了，重要数据以及日志全部被删除。而且，对这些数据没有进行备份，导致了误删的东西不能恢复。</p>
+<span id="more"></span>
+
+<p><img src="/../../images/%E6%95%85%E9%9A%9C%E5%A4%8D%E7%9B%98/image-20211119232724108.png" srcset="/img/loading.gif" lazyload alt="image-20211119232724108"></p>
+<p>我觉得，这次事故的发生全是因为流程上有以下不规范的地方：</p>
+<p><strong>(1)重要数据没有做好备份</strong></p>
+<p>​    因为一开始对这些不够重视，没有做好数据的备份。导致事故发生之后，没有任何办法进行补充。<strong>针对这个，建议以后对重要的数据至少都在另一台机器上面进行备份。异步备份，或者是同步双写方等方案都行。总之一定要保证，事故发生之后一定要有补偿手段。</strong></p>
+<p>​    这也是做好异地容灾的必要性。虽然这次是因为误跑脚本导致丢失，但是总有很多意外会导致数据的丢失，比如说磁盘损坏，地震……如果只有一份数据的话，那就真的很危险了。<strong>因此，有能力做异地容灾的话，建议还是做好这个措施。</strong></p>
+<p><strong>(2)线上环境的流程过于简单</strong></p>
+<p>​    仅仅执行了一个简单的命令就导致比较严重事故，这暴露了一个问题，<strong>线上的流程过于简单</strong>。我现在觉得，在生产的一些比较敏感的操作，至少要有确认和验证。这样才能尽可能减少误操作的发生。</p>
+<p>​    在实习的时候，我一般的发布流程是这样的：(1)如果服务需要在测试环境上运行，我就直接在本地终端直接shell脚本，把服务推送到测试环境。 (2)但是，要把服务推送到正式环境则需要通过很繁琐的流程，最后还需要比较繁琐的确认操作。</p>
+<p>​    一开始，我还经常吐槽线上环境的流程很复杂，现在终于明白公司为什么要制定这些流程规范了。</p>
+<p>​    </p>
+<p><strong>(3)“删除”不应该出现在生产环境中</strong></p>
+<p>​    任何“物理删除”都不应该出现在生产环境中…这个就不仔细说了，那个删除数据的脚本就不应该出现在生产环境里面。<strong>在腾讯实习的时候，数据从来都没有物理删除的…只有逻辑删除。</strong></p>
+<p>​    现在想想真的有点后背发凉，实习的时候导师直接把生产环境数据库的root权限给我…要是当时做了什么误操作，后果不堪设想。针对这次事故，<strong>以后开发中一定要有敬畏之心，注意流程上的规范。</strong></p>
+<h4 id="案例二-后台雪崩"><a href="#案例二-后台雪崩" class="headerlink" title="案例二:后台雪崩"></a>案例二:后台雪崩</h4><p>​    背景是这样的，我们的服务部署在上海和广州。碰巧当天通信发生了故障，导致导致服务A(广州)调用服务B(上海)全部失败，并且客户端还不断发起重试…</p>
+<p>​    随着时间的推移，请求量越积越多，等到网络通信的恢复的时候，所有流量瞬间涌到了服务B(上海那边)。导致服务B的节点大规模宕机。</p>
+<p>​    当时不知道怎么回事，就想着实在不行就先重启试试。但是重启一台死一台…</p>
+<p>​    最后故障是怎么解决的呢？无奈，只好在前端把流量入口关闭，然后再启动所有的节点，这样才慢慢把流量降下来…</p>
+<p><strong>解决方案</strong></p>
+<p>​    雪崩过载，是一种比较常见的故障。但是很多时候，但是针对该案例发生做出相应的赶紧和优化，但这有些治标不治本…最好的解决办法，就是建立“快速拒绝”的机制。</p>
+<h4 id="案例三：硬件架构层面没做好"><a href="#案例三：硬件架构层面没做好" class="headerlink" title="案例三：硬件架构层面没做好"></a>案例三：硬件架构层面没做好</h4><p>​    这是四五年前，总监遇到的一个故障。当时的情况是这样的，有一个非常核心的业务部署在了上海，并且在软件架构上的层面已经做了比较充足的防备。业务部署了三台节点，并且三个节点互为住备..</p>
+<p>​    按理说，这应该没啥问题。因为除非它三台机器同时挂掉，不然这个服务都是可用的…但是，当初忽略了一个问题，这三个节点都是链接到了同一台交换机上面。<strong>然后，当天交换机宕机了，导致核心服务百分百不可用…</strong></p>
+<p><strong>启示</strong></p>
+<p>​    这个故障给我们的启示是什么呢？就是即使你在软件层面上做好了防护，但是硬件层面没做好的话，还是十分危险的…因此从那次之后，架构层面上做了很多异地容灾的改造。</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/11/25/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/message-queue-part-2/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">消息队列学习笔记 - 2</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/11/13/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/the-google-file-system/">
+                        <span class="hidden-mobile">读论文《the google file system》</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

@@ -1,0 +1,544 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="​     ​    对于一个很简单的表，里面只有一个字段ID，执行下列语句时 1select * from T where ID &#x3D; 10;  ​    我们对该语句的执行过程进行，一个拆解。 MySQL的基本架构图">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL基础架构 --- 一条语句是怎么执行的?">
+<meta property="og:url" content="http://example.com/2021/10/01/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-base/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="​     ​    对于一个很简单的表，里面只有一个字段ID，执行下列语句时 1select * from T where ID &#x3D; 10;  ​    我们对该语句的执行过程进行，一个拆解。 MySQL的基本架构图">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/MySQL%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84-%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E6%98%AF%E6%80%8E%E4%B9%88%E6%89%A7%E8%A1%8C%E7%9A%84/1633185245582.png">
+<meta property="og:image" content="http://example.com/images/MySQL%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84-%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E6%98%AF%E6%80%8E%E4%B9%88%E6%89%A7%E8%A1%8C%E7%9A%84/1633185258741.png">
+<meta property="article:published_time" content="2021-10-01T14:32:14.000Z">
+<meta property="article:modified_time" content="2023-02-04T10:16:51.969Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/MySQL%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84-%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E6%98%AF%E6%80%8E%E4%B9%88%E6%89%A7%E8%A1%8C%E7%9A%84/1633185245582.png">
+  
+  
+  <title>MySQL基础架构 --- 一条语句是怎么执行的? - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="MySQL基础架构 --- 一条语句是怎么执行的?">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-01 22:32" pubdate>
+        2021年10月1日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.2k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      19 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">MySQL基础架构 --- 一条语句是怎么执行的?</h1>
+            
+            <div class="markdown-body">
+              <p>​    </p>
+<p>​    对于一个很简单的表，里面只有一个字段ID，执行下列语句时</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><pre><code class="hljs mysql">select * from T where ID = 10;<br></code></pre></td></tr></table></figure>
+
+<p>​    我们对该语句的执行过程进行，一个拆解。</p>
+<h3 id="MySQL的基本架构图"><a href="#MySQL的基本架构图" class="headerlink" title="MySQL的基本架构图"></a>MySQL的基本架构图</h3><p><img src="/../../images/MySQL%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84-%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E6%98%AF%E6%80%8E%E4%B9%88%E6%89%A7%E8%A1%8C%E7%9A%84/1633185245582.png" srcset="/img/loading.gif" lazyload alt="1633185245582"></p>
+<span id="more"></span>
+
+<ul>
+<li>连接器：管理数据库连接</li>
+<li>分析器：类似编译原理，进行一个SQL语法的分析，判断是否符合语义</li>
+<li>优化器：进行索引的选择</li>
+<li>执行器：引擎操作器，拿到结果</li>
+<li>缓存：    保存之前的页，如果有就直接返回（一般mysql很少开启缓存）</li>
+<li>引擎层：如何存放，并且组织数据</li>
+</ul>
+<h3 id="日志系统-一条更新语句如何完成-两阶段提交"><a href="#日志系统-一条更新语句如何完成-两阶段提交" class="headerlink" title="日志系统 一条更新语句如何完成(两阶段提交)"></a>日志系统 一条更新语句如何完成(两阶段提交)</h3><p>​    之前学习<code>select</code>流程的时候，一条查询语句的执行顺序是<code>客户端</code>，<code>连接器</code>，<code>分析器，优化器</code>，<code>执行器</code>,<code>引擎</code>。</p>
+<p>​    update语句，跟select语句有点类似，但是又有很多区别（涉及到日志的两阶段提交）</p>
+<h3 id="update语句执行流程"><a href="#update语句执行流程" class="headerlink" title="update语句执行流程"></a>update语句执行流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs mysql">update T set c = c + 1 <br>where ID = 10;<br></code></pre></td></tr></table></figure>
+
+<p>​    对于这条更新语句，select所走的所有流程，update都会走一遍，因为只有拿出该页才能对record进行一个update。</p>
+<p>​    但是与查询流程不同的是，update还涉及到两个很重要的模块**redo log(重做日志)和binlog(归档日志)**。</p>
+<p>​    </p>
+<h3 id="redo-log-引擎层的日志"><a href="#redo-log-引擎层的日志" class="headerlink" title="redo log(引擎层的日志)"></a>redo log(引擎层的日志)</h3><p>​    在Innodb中，redo log可以理解为一个可以循环使用的文件。为了循环使用，必须有两个指针。分别为<strong>write_pos 和 check_pos</strong>。</p>
+<ul>
+<li>write_pos:新的一条日志记录，从哪里开始记录</li>
+<li>check_pos:表示，循环开始的地方。如果write_pos &#x3D;&#x3D; check_pos，代表当前文件已经写满，必须fresh当前的重做日志了</li>
+</ul>
+<p><img src="/../../images/MySQL%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84-%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E6%98%AF%E6%80%8E%E4%B9%88%E6%89%A7%E8%A1%8C%E7%9A%84/1633185258741.png" srcset="/img/loading.gif" lazyload alt="1633185258741"></p>
+<p><strong>作用</strong></p>
+<ul>
+<li>让数据库有了对事务进行重做的能力，能把还没来得及归档的数据，通过日志重新跑一编。</li>
+</ul>
+<h3 id="binlog-server层日志"><a href="#binlog-server层日志" class="headerlink" title="binlog(server层日志)"></a>binlog(server层日志)</h3><p>​    MySQL 整体来看，其实就有两块：</p>
+<ul>
+<li>一块是 Server 层，它主要做的是 MySQL 功能层面的事情；</li>
+<li>还有一块是引擎层，负责存储相关的具体事宜。</li>
+</ul>
+<p>​    binlog就是server层独有的日志，记录的是<strong>对某个记录的逻辑上的操作(比如，给ID&#x3D;2这条记录的C字段+1)</strong></p>
+<p><strong>为什么server层也要有一个日志？</strong></p>
+<ul>
+<li>因为，innodb不是mysql原生的存储引擎，而是作为一个插件来进行补充的。</li>
+<li>因此server原生的MYISAM引擎，理所应当也要有一个日志binlog</li>
+</ul>
+<p><strong>两者区别</strong></p>
+<ul>
+<li><p>redo log只属于innoDB引擎；binlog是所有MySQL中server层的日志</p>
+</li>
+<li><p>redo log物理日志，每条记录表示在某个数据页进行了什么操作</p>
+</li>
+<li><p>binlog是逻辑日志，每条记录的逻辑变化(给某个字段 + n)</p>
+</li>
+<li><p>redo log循环写，binlog顺序写</p>
+</li>
+</ul>
+<h3 id="update的两阶段提交"><a href="#update的两阶段提交" class="headerlink" title="update的两阶段提交"></a>update的两阶段提交</h3><p>​    有了两个日志的概念，下面讲讲update语句的执行流程</p>
+<ul>
+<li>通过执行器，取出对应的数据页</li>
+<li>并且给对应的记录进行操作，再给到innoDB引擎</li>
+<li>引擎拿到改写的页后，刷盘，并且把<strong>该操作写入redo log中</strong></li>
+<li>并把对应的事务ID标记为，<strong>prepare可以提交状态</strong></li>
+</ul>
+<hr>
+<ul>
+<li>prepare之后，告知执行器，刷盘完成了。</li>
+<li>server层中，生成该操作的binlog，并且写入磁盘，再告知引擎</li>
+<li>引擎把prepare状态改为commit</li>
+</ul>
+<p>​    以上就是两阶段提交的全部过程。</p>
+<p><strong>如何让数据库恢复到半个月内的任意一秒？</strong></p>
+<p>场景:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">当需要恢复到指定的某一秒时，比如某天下午两点发现中午十二点有一次误删表，需要找回数据<br></code></pre></td></tr></table></figure>
+
+<p>操作:</p>
+<ul>
+<li>找到最近一次的全量备份（read-view）</li>
+<li>然后重跑全量备份 到 昨天中午十二点的删表操作的binlog</li>
+</ul>
+<p><strong>为什么要有两阶段提交？</strong></p>
+<ul>
+<li><p>因为有了两阶段提交，数据库通过这两个日志进行crash-safe之后，一定能保证恢复的数据是自洽的。</p>
+</li>
+<li><p>因为恢复数据库的时候，需要重跑binlog。我们需要拿出binlog的每条记录跟redo log进行比对，看看是否commit，如果commit就执行，不然就放弃</p>
+</li>
+</ul>
+<p><strong>如果没有两阶段提交</strong></p>
+<p>(1)先提交redo log，再提交binlog</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs routeros">1.redo log中记录了一条，<span class="hljs-builtin-name">set</span> <span class="hljs-attribute">C</span>=C+1 WHERE ID = 10的记录,(<span class="hljs-attribute">C</span>=0)<br>2.写入binlog中途宕机了，当值binlog没有该记录<br>3.crash的时候，我们是希望<span class="hljs-attribute">C</span>=1,因为redo log已经记录了<br>4.但是重跑binlog的时候，缺失了该条记录，因此最后<span class="hljs-attribute">C</span>=0,显然跟想要的结果不一致<br></code></pre></td></tr></table></figure>
+
+<p>(2)先提交binlog，再提交redo log</p>
+<figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mel"><span class="hljs-number">1.</span>binlog写完，<span class="hljs-keyword">redo</span> <span class="hljs-keyword">log</span>没写完就宕机了<br><span class="hljs-number">2.</span>意味着，其实db是不承认这条记录的<br><span class="hljs-number">3.</span>因此跑binlog的时候，该条在<span class="hljs-keyword">redo</span> <span class="hljs-keyword">log</span>缺失的记录仍旧会被执行。<br><span class="hljs-number">4.</span>最后造成了，恢复的数据库 &gt; 想要的数据库。<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="QA"><a href="#QA" class="headerlink" title="QA"></a>QA</h3><p><strong>1.为什么binlog没有crash-safe功能</strong></p>
+<figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs mel"><span class="hljs-number">1.</span>根本原因是 <span class="hljs-keyword">redo</span>-<span class="hljs-keyword">log</span> 是循环写。因为是循环写，带来了刷盘机制<br><span class="hljs-number">2.</span>binlog 记录的是给<span class="hljs-string">&quot;id = 2,这行某个极端+1&quot;</span><br><span class="hljs-number">3.</span>因为binlog没有刷盘机制，因此没有一个标记，让binlog判断哪些数据已经刷盘了<br><br>举个栗子<br>binlog中有两条数据,init c = <span class="hljs-number">0</span><br>(<span class="hljs-number">1</span>)给ID=<span class="hljs-number">2</span>,这行c字段加<span class="hljs-number">1</span><br>(<span class="hljs-number">2</span>)给ID=<span class="hljs-number">2</span>,这行c字段加<span class="hljs-number">1</span><br><br>假设，写入(<span class="hljs-number">1</span>)的时候，刷盘了。那么<span class="hljs-keyword">redo</span> <span class="hljs-keyword">log</span>只要重做(<span class="hljs-number">2</span>)即可了。<br>如果没有<span class="hljs-keyword">redo</span> <span class="hljs-keyword">log</span>，那么binlog无法判断哪条数据已经刷盘了，如果全量重跑一遍数据的话，很可能会出错。<br></code></pre></td></tr></table></figure>
+
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/MySQL/">MySQL</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/data-replicate/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">浅谈数据复制</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/09/11/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/how-to-do-the-data-partition/">
+                        <span class="hidden-mobile">如何做数据分区</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

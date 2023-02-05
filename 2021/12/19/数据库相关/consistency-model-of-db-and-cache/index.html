@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="&amp;#8195;&amp;#8195;最近工作上用到了缓存。用缓存的时候leader让我注意一致性的问题。在调研一下公司常见的双写一致方案，发现大部分方案都不是完美了（虽然我个人觉得不少方案，其实还是有优化的空间的），需要结合实际的使用场景来选择，还是应了那句话不要抛开场景去谈技术选型。 &amp;#8195;&amp;#8195;先说结论：因为写入数据看和写入缓存，是两个原子性操作(合在一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何保证缓存和数据库双写一致">
+<meta property="og:url" content="http://example.com/2021/12/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/consistency-model-of-db-and-cache/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="&amp;#8195;&amp;#8195;最近工作上用到了缓存。用缓存的时候leader让我注意一致性的问题。在调研一下公司常见的双写一致方案，发现大部分方案都不是完美了（虽然我个人觉得不少方案，其实还是有优化的空间的），需要结合实际的使用场景来选择，还是应了那句话不要抛开场景去谈技术选型。 &amp;#8195;&amp;#8195;先说结论：因为写入数据看和写入缓存，是两个原子性操作(合在一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211219151501236.png">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211219152053846.png">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211219153932201.png">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211226174711210.png">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211226191330592.png">
+<meta property="og:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211226195010407.png">
+<meta property="article:published_time" content="2021-12-19T06:05:55.000Z">
+<meta property="article:modified_time" content="2023-02-04T07:23:08.157Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/consistency-model-of-db-and-cache/image-20211219151501236.png">
+  
+  
+  <title>如何保证缓存和数据库双写一致 - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="如何保证缓存和数据库双写一致">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-12-19 14:05" pubdate>
+        2021年12月19日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.4k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      29 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">如何保证缓存和数据库双写一致</h1>
+            
+            <div class="markdown-body">
+              <p>&amp;#8195;&amp;#8195;最近工作上用到了缓存。用缓存的时候leader让我注意一致性的问题。在调研一下公司常见的双写一致方案，发现大部分方案都不是完美了<strong>（虽然我个人觉得不少方案，其实还是有优化的空间的）</strong>，需要结合实际的使用场景来选择，还是应了那句话<strong>不要抛开场景去谈技术选型</strong>。</p>
+<p>&amp;#8195;&amp;#8195;先说结论：<strong>因为写入数据看和写入缓存，是两个原子性操作(合在一起就不是了)。因此，所有方法只能尽量避免数据的不一致，总会在极端的情况下有数据不一的情况发生，要想完全避免这事，那只能依靠事务了。</strong></p>
+<span id="more"></span>
+
+
+
+<h2 id="常用的解决数据不一致的方案"><a href="#常用的解决数据不一致的方案" class="headerlink" title="常用的解决数据不一致的方案"></a>常用的解决数据不一致的方案</h2><p>​        先来简单了解一下，三种比较常见解决“缓存-数据库一致性”的方案。</p>
+<h3 id="缓存旁路模式"><a href="#缓存旁路模式" class="headerlink" title="缓存旁路模式"></a>缓存旁路模式</h3><p>&amp;#8195;&amp;#8195;缓存旁路模式，<strong>是最常用的保证双写一致的模式</strong>，对于数据的读取和更新有两种不同的流程。</p>
+<p><strong>对于读取数据：</strong></p>
+<figure class="highlight scss"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><pre><code class="hljs scss">(<span class="hljs-number">1</span>)先从缓存中查询，判断缓存是否命中 <br>(<span class="hljs-number">2</span>)如果缓存命中的情况下，直接返回数据给到client <br>(<span class="hljs-number">3</span>)如果缓存没有命中，就从db里面读取数据，顺带把该key设置到缓存里面。<br></code></pre></td></tr></table></figure>
+
+
+
+<p><img src="/../../images/consistency-model-of-db-and-cache/image-20211219151501236.png" srcset="/img/loading.gif" lazyload alt="Cache-Aside-Pattern"></p>
+<p><strong>对于写数据（插入&#x2F;更新）:</strong></p>
+<p>&amp;#8195;&amp;#8195;写流程就简单一些了，只需要插入的时候，<strong>先操作数据库，然后再删除缓存就好了</strong>。</p>
+<p><img src="/../../images/consistency-model-of-db-and-cache/image-20211219152053846.png" srcset="/img/loading.gif" lazyload alt="image-20211219152053846"></p>
+<h3 id="读写穿透"><a href="#读写穿透" class="headerlink" title="读写穿透"></a>读写穿透</h3><p><img src="/../../images/consistency-model-of-db-and-cache/image-20211219153932201.png" srcset="/img/loading.gif" lazyload alt="image-20211219153932201"></p>
+<p>&amp;#8195;&amp;#8195;这里他只是<strong>把缓存作为主要的存储单位，抽象了一个chache provider服务，该服务负责缓存的存储，以及后续与数据库的交互交给缓存去进行处理，这对客户端来说是不感知的，看起来只是简单地调用了一下缓存。</strong></p>
+<p><strong>读流程</strong></p>
+<ul>
+<li>从缓存中读取</li>
+<li>如果缓存命中，返回结果给调用者</li>
+<li>如果缓存不命中，则缓存发送请求，到数据库中请求数据，然后缓存再返回给调用者</li>
+</ul>
+<p><strong>写流程</strong></p>
+<ul>
+<li>缓存命中，则更新缓存，然后缓存同步去更新数据库</li>
+<li>缓存没有命中，则直接更新数据库</li>
+</ul>
+<p><strong>这个解决方案，很多地方都跟CAP一致，但是最大的不同点在于读写传统在更新的最后没有对缓存中的记录进行删除。这个我个人觉得有一些问题，后面的篇幅再细说。</strong></p>
+<h3 id="异步缓存写入"><a href="#异步缓存写入" class="headerlink" title="异步缓存写入"></a>异步缓存写入</h3><p>&amp;#8195;&amp;#8195;这个方案，跟读写穿透很像，两者都是通过抽象的cache provider服务，对db进行交互。</p>
+<p>&amp;#8195;&amp;#8195;但是又有很大的不同，读写穿透或者是缓存旁路，都是<strong>同步地对数据库进行更新，而该方案则不直接更新数据库，而是批量去更新数据库。</strong></p>
+<p>&amp;#8195;&amp;#8195;这跟kafka一样，带来的吞吐率的提升，但是带来的一些一致性问题。</p>
+<h2 id="要考虑的问题"><a href="#要考虑的问题" class="headerlink" title="要考虑的问题"></a>要考虑的问题</h2><h3 id="Q-删除缓存，还是更新缓存"><a href="#Q-删除缓存，还是更新缓存" class="headerlink" title="Q:删除缓存，还是更新缓存"></a>Q:删除缓存，还是更新缓存</h3><p>&amp;#8195;&amp;#8195;目前为止，大家都比较不喜欢更新缓存的方案，因为在高并发的场景之下，很容易出现数据不一致的问题的问题。我们假设是在“先更新db，再更新缓存”的方式下进行双写看看会发生什么样的问题。</p>
+<p>&amp;#8195;&amp;#8195;假设，现在有两个请求要对同一个记录进行更新。我们希望db和cache这两个收到<strong>记录更新的顺序是一致的（比如说，都是先收到请求1再收到请求2，或者先收到请求2再收到请求1）</strong>，但是因为网络等其他原因，最后的顺序很可能跟我们理想情况不太一样，如下图：</p>
+<p><img src="/../../images/consistency-model-of-db-and-cache/image-20211226174711210.png" srcset="/img/loading.gif" lazyload alt="image-20211226174711210"></p>
+<p>&amp;#8195;&amp;#8195;从图片中我们可以看到，因为db和cache他们收到请求的顺序不一样，因此造成了最后<strong>db中的数据是1，cache中的数据是2。</strong></p>
+<p>&amp;#8195;&amp;#8195;更新缓存的方案，有概率比较大的概率导致数据不一致的情况发生。因此，比较多人喜欢用删除缓存来代替更新缓存。（毕竟删除肯定不会带来数据不一致的问题，因为删了就没有了嘛）</p>
+<p>&amp;#8195;&amp;#8195;虽然如此，我个人觉得这个数据不一致的本质上是<strong>一种写冲突</strong>，因此实际上还是有不少方案来解决这个数据不一致的问题，我想了一下，大致有以下解决方案：</p>
+<ul>
+<li>last writer win</li>
+<li>lamport时间戳</li>
+<li>版本向量</li>
+<li>仿照读写穿透跟rocketMQ，来保证请求的顺序</li>
+</ul>
+<p>​        至于为什么会选择删除缓存这种方案，我想这可能是最简单有效的吧。解决写倾斜，在这个场景中似乎没有带来性能的提升</p>
+<h3 id="Q-先操作数据库，还是先操作缓存"><a href="#Q-先操作数据库，还是先操作缓存" class="headerlink" title="Q:先操作数据库，还是先操作缓存"></a>Q:先操作数据库，还是先操作缓存</h3><p>&amp;#8195;&amp;#8195;在<code>Cache-Aside-Pattern</code>中，是先操作数据库。但是在<code>读写穿透</code>的方案中，选择了先操作缓存，再同步修改db。下面，我们讨论一下这两种选择，会有什么样的问题。</p>
+<p><strong>(1)先操作数据库，再操作缓存</strong></p>
+<p>&amp;#8195;&amp;#8195;这种操作其实并没有特别大的问题，只是在某些情况下会发生一些小小的数据不一致问题。</p>
+<p><img src="/../../images/consistency-model-of-db-and-cache/image-20211226191330592.png" srcset="/img/loading.gif" lazyload alt="image-20211226191330592"></p>
+<p>&amp;#8195;&amp;#8195;两个请求，请求1进行数据库的更新，如果缓存还没更新的情况下。请求2，发出了一个读请求，并且快速返回数据给调用者，那么就返回的是一个旧数据。</p>
+<p>&amp;#8195;&amp;#8195;其实这个问题并没有什么大不了的，<strong>因为网络问题，导致数据更新不及时而已，数据总是会收敛到一致的，甚至连client也不知道自己拿到的数据是旧数据</strong>。</p>
+<p>&amp;#8195;&amp;#8195;但是，如果请求1和请求2是同一个client发出的，那么client就会十分困惑了。</p>
+<p><strong>(2)先操作缓存，再操作数据库</strong></p>
+<p>&amp;#8195;&amp;#8195;这种方式我感觉，会带来比较严重的数据不一致问。我们还是假设有两个请求，如下图所示：</p>
+<p><img src="/../../images/consistency-model-of-db-and-cache/image-20211226195010407.png" srcset="/img/loading.gif" lazyload alt="image-20211226195010407"></p>
+<p>&amp;#8195;&amp;#8195;一个写请求进行对记录进行更新，它删除缓存之后，马上来了一个读请求，此时cache中并没有数据，因此这个读请求需要到db里面请求数据。从db中拿到数据之后，需要把数据设置到缓存里面。<strong>那么此时，就出现了缓存是旧值，数据库是新的值。这种数据不一致还是比较严重的。我想这种操作，需要在缓存设置存在时间。</strong></p>
+<p>​    我认为，<strong>如果采用删除缓存方案的话，应该要把操作缓存的步骤放到最后。</strong>不然就会出现上面的情况了。</p>
+<p>​    那么为什么<code>读写穿透</code>没有这种问题，其实我觉得有以下原因：</p>
+<ul>
+<li>因为这时更新缓存，不是删除缓存。这样如果有读请求过来的话，它会访问到缓存，并直接返回数据。并不会走到db</li>
+<li>因为请求都是统一由<code>cache provider</code>进行管理。因此，完全有能力去管理这个请求的先后顺序。</li>
+</ul>
+<p><strong>(3)双删</strong></p>
+<p>&amp;#8195;&amp;#8195;这种，其实是为了针对情况(1)的不足而设计的。在该情况下，因为更改了数据库之后，还没更新数据库。<strong>这时读请求过来了，但是这个请求就会被，存储了旧数据给打发走了。</strong></p>
+<p>&amp;#8195;&amp;#8195;因此，双删这种策略，<strong>就是在修改db之前，先进行一个缓存删除的操作</strong>。如果是用<code>Cache - Aside - Pattern</code>模式，先进行db的操作然后再对缓存中的数据进行删除。那么此时会出现一个小小的数据不一致的问题，<strong>比如说更新数据库成功后，缓存还没来得及删除，此时一个读操作就会被旧的缓存打回去，会读到旧的值，与db不太一致。</strong></p>
+<p>&amp;#8195;&amp;#8195;因此，多了双删这种策略。但是，其实在非常极端的情况下依旧会出现数据不一致的情况发生。</p>
+<p>​    </p>
+<h2 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h2><p>&amp;#8195;&amp;#8195;上面说的三种缓存使用模式，实际上都会有或多或少的<code>缓存 - 数据库 不一致</code>的问题。<strong>归根结底还是那个问题，因为操作数据库和操作缓存合起来不是一个原子性的操作，因此总会有一个时间点让数据不是自洽的，会发生不一致问题。</strong></p>
+<p>&amp;#8195;&amp;#8195;可能是因为分布式系统，很难实现类似<code>MVCC</code>的机制因此数据很难在一次“事务中”是自洽的。又或者说，实现分布式事务的性能开销实在是太大了。</p>
+<p>&amp;#8195;&amp;#8195;总之呢，这三种方案还是要结合场景来使用的。不过我个人用的比较多的还是<code>Cache - Aside - Pattern</code>模式。其实，在我们大多数的使用场景中，缓存都是读多写少更新少。因此，大多是情况下放入缓存的数据都是更新频率很低的数据，导致极端的数据不一致的情况发生。还有，我们应该要防止<strong>”数据库是新值，缓存是旧值“</strong>的情况发生，因为这样该记录的缓存很长时间内都不会发生修改，会一直返回给调用方错误的值。<strong>因此，我觉得大多数读为主的场景，可以考虑该方案。</strong></p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/01/01/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/detail-of-raft-part-1/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">读论文《In Search of an Understandable Consensus Algorithm》 --- raft (1)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mit6-824-lab1-the-mapReduce/">
+                        <span class="hidden-mobile">《the MapReduce》 --- lab1</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

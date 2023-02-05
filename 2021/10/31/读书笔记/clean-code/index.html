@@ -1,0 +1,575 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="变量名原则一：名副其实 变量名和函数名或类名，一定要让人知道它是干什么用的。如果一个变量，需要注释来补充，则不是一个好的变量名。  12&#x2F;&#x2F; 如果代码中到处出现d，则会让人十分困惑int d ; &#x2F;&#x2F; count time in days   减少代码的模糊度  12345678910111213public List&lt;int[]&gt; getThem()&amp;#123;        Lis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《代码整洁之道》 --- 写出优雅的代码">
+<meta property="og:url" content="http://example.com/2021/10/31/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/clean-code/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="变量名原则一：名副其实 变量名和函数名或类名，一定要让人知道它是干什么用的。如果一个变量，需要注释来补充，则不是一个好的变量名。  12&#x2F;&#x2F; 如果代码中到处出现d，则会让人十分困惑int d ; &#x2F;&#x2F; count time in days   减少代码的模糊度  12345678910111213public List&lt;int[]&gt; getThem()&amp;#123;        Lis">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-10-31T14:03:31.000Z">
+<meta property="article:modified_time" content="2022-02-03T13:43:40.296Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  <title>《代码整洁之道》 --- 写出优雅的代码 - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="《代码整洁之道》 --- 写出优雅的代码">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-31 22:03" pubdate>
+        2021年10月31日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      6.4k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      54 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">《代码整洁之道》 --- 写出优雅的代码</h1>
+            
+            <div class="markdown-body">
+              <h2 id="变量名"><a href="#变量名" class="headerlink" title="变量名"></a>变量名</h2><h3 id="原则一：名副其实"><a href="#原则一：名副其实" class="headerlink" title="原则一：名副其实"></a>原则一：名副其实</h3><ul>
+<li>变量名和函数名或类名，一定要让人知道它是干什么用的。<strong>如果一个变量，需要注释来补充，则不是一个好的变量名。</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 如果代码中到处出现d，则会让人十分困惑</span><br><span class="hljs-keyword">int</span> d ; <span class="hljs-comment">// count time in days</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>减少代码的<strong>模糊度</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> List&lt;<span class="hljs-keyword">int</span>[]&gt; getThem()&#123;<br>    <br>    List&lt;<span class="hljs-keyword">int</span>[]&gt; list1 = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span>[] x : theList)&#123;<br>        <br>        <span class="hljs-keyword">if</span>(x[<span class="hljs-number">0</span>] == <span class="hljs-number">4</span>)&#123;<br>            list1.add(x);<br>        &#125;<br>        <br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> list1;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    <span id="more"></span></p>
+<p>​    上面这段代码存在几个问题，有很多东西，如果不结合上下文（其他代码）来看的话，我们很难快速知道该段代码到底想表达什么东西：</p>
+<p>（1）theList 是什么东西？类型是什么</p>
+<p>（2）4 表达什么意思</p>
+<p>（3）X[0]，有什么特殊的吗？</p>
+<p>（4）List1，又是什么东西</p>
+<p>（5）getThem又是什么意思</p>
+<p>​    假设代码的场景，正在开发一款扫雷游戏，theList是所有单元格存储集合，[0]表示该单元格的状态，4表示已经标记。显然，list1是存储已经标记的所有单元格。因此，上述代码可以改为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> List&lt;<span class="hljs-keyword">int</span>[]&gt; getAllTagCell()&#123;<br>    <br>    List&lt;<span class="hljs-keyword">int</span>[]&gt; tagCellList = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span>[] cell : gameboard)&#123;<br>        <br>        <span class="hljs-keyword">if</span>(cell[CELL_STATUS] == TAG_THE_CELL)&#123;<br>            tagCellList.add(x);<br>        &#125;<br>        <br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> tagCellList;<br>&#125;<br><br><span class="hljs-comment">// 甚至可以进一步封装</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> List&lt;Cell&gt; <span class="hljs-title">getAllTagCell</span><span class="hljs-params">()</span></span>&#123;<br>    <br>    List&lt;Cell&gt; tagCellList = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();<br>    <span class="hljs-keyword">for</span>(Cell cell : gameboard)&#123;<br>        <br>        <span class="hljs-keyword">if</span>(Cell.isTagged())&#123;<br>            tagCellList.add(x);<br>        &#125;<br>        <br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> tagCellList;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="原则二：做有意义的区分"><a href="#原则二：做有意义的区分" class="headerlink" title="原则二：做有意义的区分"></a>原则二：做有意义的区分</h3><p>(1)变量名后加数字</p>
+<p>​    因为同一个作用域里（通常指某个function内），不能够出现相同名字的变量。因此很常见的办法就是，在变量后面加数字。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">arrsTransfer</span><span class="hljs-params">(<span class="hljs-keyword">int</span>[] n1,<span class="hljs-keyword">int</span>[] n2)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>;i&lt;n1.length;i++)&#123;<br>        n1[i]=n2[i];<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    很显然，这是把数组n1拷贝到n2。这里有个问题，如果不写注释的情况下，很难知道是 n1 —&gt; n2，还是 n2 —&gt; n1。</p>
+<p>​    因此，我们把n1和n2，改为destination和source。代码的可读性就好很多了。</p>
+<p>(2)没意义的区别</p>
+<p>​    比如说，有一个Person类，你很难说出Person，PersonInfo，People，这几个变量有什么区别。<strong>如果不做特殊约定的话</strong></p>
+<p>​    同样，a和the也很难区分。</p>
+<h3 id="原则三：尽量避免缩写，除非这个缩写是大家的共识"><a href="#原则三：尽量避免缩写，除非这个缩写是大家的共识" class="headerlink" title="原则三：尽量避免缩写，除非这个缩写是大家的共识"></a>原则三：尽量避免缩写，除非这个缩写是大家的共识</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Record</span></span>&#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> genymdhms;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> modymdhms; <span class="hljs-comment">//years month day hour minutes second</span><br>&#125;<br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Record</span></span>&#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> generationTimestamp;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> modifyTimestamp;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    如果不是大家的共识，没有人知道<code>ymdhms</code>表示什么东西。</p>
+<h3 id="原则四：常量尽量起别名"><a href="#原则四：常量尽量起别名" class="headerlink" title="原则四：常量尽量起别名"></a>原则四：常量尽量起别名</h3><p>​    不直接使用常量，而用别名有两个好处。</p>
+<ul>
+<li>代码可读性更强</li>
+<li>便于搜索</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> List&lt;<span class="hljs-keyword">int</span>[]&gt; getThem()&#123;<br>    <br>    List&lt;<span class="hljs-keyword">int</span>[]&gt; list1 = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span>[] x : theList)&#123;<br>        <br>        <span class="hljs-keyword">if</span>(x[<span class="hljs-number">0</span>] == <span class="hljs-number">4</span>)&#123;<br>            list1.add(x);<br>        &#125;<br>        <br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> list1;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    以这段代码为例子，如果直接使用0和4，我们不明白这代表什么意思。可读性很差。</p>
+<p>​    并且在修改代码的时候，我们直接搜索4，必然会出现一大堆无关的东西，因此，我们改用别名来操作。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">const</span> (<br>	CELL_STATUTE = <span class="hljs-number">0</span><br>    CELL_BE_TAGGED = <span class="hljs-number">4</span><br>)<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="原则五：每个概念一个词"><a href="#原则五：每个概念一个词" class="headerlink" title="原则五：每个概念一个词"></a>原则五：每个概念一个词</h3><ul>
+<li>同一个类中的方法，有getXXX，fetchXXX ；findXXX，selectXXX，这种会让人很困惑。<strong>我们统一使用get，find这样会更好</strong></li>
+<li>例如，manager，controller，driver也会让人困惑，统一manager好了</li>
+</ul>
+<h3 id="原则六：有意义的前缀"><a href="#原则六：有意义的前缀" class="headerlink" title="原则六：有意义的前缀"></a>原则六：有意义的前缀</h3><p>​    设想你有名为<code>firstName</code>,<code>lastName</code>,<code>street</code>,<code>houseNumber</code>,<code>city</code>。把他们放一块，很显然形成一个地址，但是单独来看就不知道是什么了。</p>
+<p>​    可以在变量前加个前缀，就很显而易见了，例如<code>addressFirstName</code></p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><p>先看一段很糟糕的代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs java"> <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span>  String <span class="hljs-title">testableHtml</span><span class="hljs-params">(PageData pageData, <span class="hljs-keyword">boolean</span> includeSuiteSetup)</span> <span class="hljs-keyword">throws</span> Exception</span>&#123;<br><br>        WikiPage wikiPage = pageData.getWikiPage();<br>        StringBuffer buffer = <span class="hljs-keyword">new</span> StringBuffer();<br><br>        <span class="hljs-keyword">if</span>(pageData.hasAttribute(<span class="hljs-string">&quot;test&quot;</span>))&#123;<br>            <span class="hljs-keyword">if</span>(includeSuiteSetup)&#123;<br>                WikiPage suiteSetup = PageCrawlerImpl.getInheritedPage();<br>                <span class="hljs-keyword">if</span>(suiteSetup != <span class="hljs-keyword">null</span>)&#123;<br>                    WikiPagePath pagePath = suiteSetup.getFullPath();<br>                &#125;<br>            &#125;<br>        &#125;<br>        buffer.append(pageData.getContent());<br><br>        <span class="hljs-keyword">if</span>(pageData.hasAttribute(<span class="hljs-string">&quot;test&quot;</span>))&#123;<br>            <span class="hljs-keyword">if</span>(includeSuiteSetup)&#123;<br>               <br>                &#125;<br>            &#125;<br>        &#125;<br>        <br>        <br><br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    这段代码不光长，而且很复杂（if判断很多，而且还是嵌套判断），有大量的字符串。导致整段代码理解起来非常费解。有太多不同层级的抽象，奇怪的字符串，以及if嵌套。</p>
+<p>​    但是，我们可以做一点抽象和重构，就能在几行代码内就解决问题。我们看一下重构后的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> string TEST_ATTRIBUTE_TAG = <span class="hljs-string">&quot;Test&quot;</span>;<br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">renderPageWithSetupsAndTeardowns</span><span class="hljs-params">(PageData pageData,<span class="hljs-keyword">boolean</span> isSetUp)</span> throw <span class="hljs-title">Exception</span><span class="hljs-params">()</span></span>&#123;<br>    <br>    <span class="hljs-keyword">boolean</span> isTestPage = pageData.hasAttribute(TEST_ATTRIBUTE_TAG);<br>    <span class="hljs-keyword">if</span>(isTestPage)&#123;<br>        WikiPage testPage = pageData.getWikiPage();<br>        String newPageContent = <span class="hljs-keyword">new</span> StringBuffer();<br>        includeSetupPage(XXX);<br>        newPageContent.append(pageData.getContent());<br>        includeTeardownPage(XXX);<br>        pageData.setContent(newPageContent.toString());<br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> pageData.getHtml();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    我们可以很清晰的看到这段代码到底干了什么事情，总的来说是两件事。处理setUpPage和TearDownPage，并且把内容塞入一个testPage中。</p>
+<h3 id="原则一：函数应该尽可能短"><a href="#原则一：函数应该尽可能短" class="headerlink" title="原则一：函数应该尽可能短"></a>原则一：函数应该尽可能短</h3><p>​    《clean code》提倡代码最好压缩到20行左右。我个人觉得这个标准过于严苛了，做到以下几点我个人觉得就可以了</p>
+<ul>
+<li>如果某段中，对某个对象的几个(&gt;&#x3D;2)字段修改，最好把他进行封装</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">People</span></span>&#123;<br>    String name;<br>    <span class="hljs-keyword">int</span> age;<br>    <span class="hljs-keyword">int</span> sex;<br>&#125;<br><span class="hljs-comment">// 重构前</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testFunciton</span><span class="hljs-params">(RpcReq req,RpcRsp rsp)</span></span>&#123;<br>    <br>    <span class="hljs-comment">// ......</span><br>    <br>    People people = <span class="hljs-keyword">new</span> People();<br>    people.name = req.name;<br>	people.age = req.age;<br>    people.sex = req.sex;<br>    <br>    <span class="hljs-comment">// ......</span><br>&#125;<br><br><span class="hljs-comment">// 重构后</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> People <span class="hljs-title">getPeopleItemByReq</span><span class="hljs-params">(RpcReq req)</span></span>&#123;<br>    People people = <span class="hljs-keyword">new</span> People();<br>    people.name = req.name;<br>	people.age = req.age;<br>    people.sex = req.sex;<br>	<br>    <span class="hljs-keyword">return</span> people;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testFunciton</span><span class="hljs-params">(RpcReq req,RpcRsp rsp)</span></span>&#123;<br>    <br>    <span class="hljs-comment">// ......</span><br>    <br>    People people = getPeopleItemByReq(req);<br>    <br>    <span class="hljs-comment">// ......</span><br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>处理逻辑进行分装，保证每段处理逻辑只做一件事</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> string TEST_ATTRIBUTE_TAG = <span class="hljs-string">&quot;Test&quot;</span>;<br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">renderPageWithSetupsAndTeardowns</span><span class="hljs-params">(PageData pageData,<span class="hljs-keyword">boolean</span> isSetUp)</span> throw <span class="hljs-title">Exception</span><span class="hljs-params">()</span></span>&#123;<br>    <br>    <span class="hljs-keyword">boolean</span> isTestPage = pageData.hasAttribute(TEST_ATTRIBUTE_TAG);<br>    <span class="hljs-keyword">if</span>(isTestPage)&#123;<br>        WikiPage testPage = pageData.getWikiPage();<br>        String newPageContent = <span class="hljs-keyword">new</span> StringBuffer();<br>        includeSetupPage(XXX);<br>        newPageContent.append(pageData.getContent());<br>        includeTeardownPage(XXX);<br>        pageData.setContent(newPageContent.toString());<br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> pageData.getHtml();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    像这段代码，把setupPage和includeTeardown的处理逻辑封装了，然后封装之后因为他们是同层级的功能，又能封装一次，就让函数非常简洁</p>
+<ul>
+<li>一个函数内，尽量少if。if内的条件，以及后续的处理逻辑，也可以进行封装<ul>
+<li>建议if里面不要再嵌套if，除非实在没办法</li>
+</ul>
+</li>
+</ul>
+<h3 id="原则二：只做一件事情"><a href="#原则二：只做一件事情" class="headerlink" title="原则二：只做一件事情"></a>原则二：只做一件事情</h3><p>​    一开始的那段代码，做了很多事情。(1)创建传冲去 (2)获取页面信息 (3)渲染路径 (4)添加字符串…但是重构之后，就变得简单了很多，制作了一件事，把setup和tearDown放入到测试页面中。其他事情，放到如何getSetUpPage和tearDownPage中。</p>
+<p><strong>如何判断该函数是否符合只做一件事的标准？我个人觉得符合下面条件就可以了</strong></p>
+<ul>
+<li>函数做的事情，跟函数名描述的一样</li>
+<li>函数是否再继续拆分</li>
+<li>但是，没必要过于追求函数只做一件事，个人觉得，函数里面所做的事情，都是同一层级的，那问题也不大，我们把该函数封装起来就好了，因为追求所有函数都只做一件事是很难的。<strong>应该追求的是，大部分的函数都只做一件事</strong></li>
+</ul>
+<h3 id="原则三：每个函数一个抽象层级"><a href="#原则三：每个函数一个抽象层级" class="headerlink" title="原则三：每个函数一个抽象层级"></a>原则三：每个函数一个抽象层级</h3><p><strong>自顶向下规则</strong></p>
+<ul>
+<li>该函数，要做设置和拆分<ul>
+<li>设置<ul>
+<li>如果这是套件，则套件设置步骤<ul>
+<li>套件设置步骤：XXXX</li>
+</ul>
+</li>
+<li>如果不是套件，则普通步骤<ul>
+<li>普通步骤:XXXX</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>拆分</li>
+</ul>
+</li>
+</ul>
+<h3 id="原则四：switch-和-if-else"><a href="#原则四：switch-和-if-else" class="headerlink" title="原则四：switch 和 if else"></a>原则四：switch 和 if else</h3><p>​    写出短小的switch语句很难，因为switch这个语法就是定义为做同多件事情。我们看一下下面这段代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><br><span class="hljs-function"><span class="hljs-keyword">public</span> Money <span class="hljs-title">caculatePay</span><span class="hljs-params">(Employee e)</span></span>&#123;<br>    <span class="hljs-keyword">switch</span>(e.type)&#123;<br>        <span class="hljs-keyword">case</span> COMMISSIONED:<br>            caculateCommissionPay(e);<span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> HOURLY:<br>            caculateHourlyPay(e);<span class="hljs-keyword">break</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这段代码有两个比较重大的问题：</p>
+<ul>
+<li>如果Employee添加新的type，那么必需修改该函数 <strong>（我们期望的当然是改动越小越好）</strong></li>
+<li>显然类似结构的代码会在很多地方，如果新加类型，改动就会非常大了</li>
+</ul>
+<p>​    这种问题的根本原因是几个不同type的Employee耦合在了一起，那么解决方案就是把switch隐藏在工厂方法的底层。那么只要创建Employee的时候，指定type就好了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Employee</span></span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">caculatedPay</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">payDate</span><span class="hljs-params">()</span></span>;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SalaryEmployee</span> <span class="hljs-title">extend</span> <span class="hljs-title">Employee</span></span>&#123;<br>    <span class="hljs-comment">//...</span><br>&#125;<br><br><span class="hljs-keyword">public</span> calss HourlyEmployee extend Employee&#123;<br>    <br>&#125;<br><span class="hljs-comment">// 工厂</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> class <span class="hljs-title">EmployFactory</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-function">Employee <span class="hljs-title">makeEmployee</span><span class="hljs-params">(<span class="hljs-keyword">int</span> emlpoyeeType)</span></span>&#123;<br>        <span class="hljs-keyword">switch</span>(employeeType)&#123;<br>            <span class="hljs-keyword">case</span> SALARY:<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> SalaryEmployee();<br>            <span class="hljs-keyword">case</span> HOURLY:<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> HourlyEmployee();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    把type隐藏在工厂方法里面，上述的问题大部分都能够解决。并且代码的可拓展性会变得更好。</p>
+<h3 id="原则五：起一个好的函数名"><a href="#原则五：起一个好的函数名" class="headerlink" title="原则五：起一个好的函数名"></a>原则五：起一个好的函数名</h3><ul>
+<li>不要害怕长名称，长名称总比短而令人费解的名称好</li>
+<li>命名方式保持一致</li>
+</ul>
+<p>目前遇到起名很烦躁的情况是Dao层，给自己定下这些规范</p>
+<p><strong>(1)主键 &#x2F; 唯一键查询</strong></p>
+<p>Select + XXX + By + PrimaryKey</p>
+<p><strong>(2)批量查询</strong></p>
+<p>Find + XXX + By + field1_field2…</p>
+<h3 id="原则六：尽量减少函数参数"><a href="#原则六：尽量减少函数参数" class="headerlink" title="原则六：尽量减少函数参数"></a>原则六：尽量减少函数参数</h3><div class="code-wrapper"><pre><code class="hljs"> 对于函数的参数 0个最好，1个可以接受，2个还行，3个底线，超过3个不能接受。如果传递真的超过三个，考虑以下两个方面：
+</code></pre></div>
+<ul>
+<li>能不能做函数拆分？</li>
+<li>把参数进行封装</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/11/04/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/why-single-thread-model-in-redis-is-so-fast/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">redis单线程为什么这么快？</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/10/07/the-problems-of-using-git/">
+                        <span class="hidden-mobile">开发中遇到的一些问题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

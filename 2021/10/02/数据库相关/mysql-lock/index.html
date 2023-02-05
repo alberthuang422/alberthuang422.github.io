@@ -1,0 +1,536 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="全局锁和表锁 — server层全局锁​    顾名思义，全局锁就是给整个数据库实例进行加锁。命令是Flush tables with read lock。 ​    当需要整个数据库进入只读状态时，就用这个命令。一般来说,只有全局备份才会使用这个命令，但即使是做全局备份，我也不推荐使用这个锁。 ​    因为对全局加锁，带来的坏处很多很多。  对全局进行加锁，那么基本上所有操作都会被阻塞，通常情">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈数据库的锁(一)">
+<meta property="og:url" content="http://example.com/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="全局锁和表锁 — server层全局锁​    顾名思义，全局锁就是给整个数据库实例进行加锁。命令是Flush tables with read lock。 ​    当需要整个数据库进入只读状态时，就用这个命令。一般来说,只有全局备份才会使用这个命令，但即使是做全局备份，我也不推荐使用这个锁。 ​    因为对全局加锁，带来的坏处很多很多。  对全局进行加锁，那么基本上所有操作都会被阻塞，通常情">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185917151.png">
+<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185936238.png">
+<meta property="article:published_time" content="2021-10-02T14:43:45.000Z">
+<meta property="article:modified_time" content="2023-02-04T10:17:17.827Z">
+<meta property="article:author" content="albertHuang">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185917151.png">
+  
+  
+  <title>浅谈数据库的锁(一) - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/blue_sky.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="浅谈数据库的锁(一)">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-02 22:43" pubdate>
+        2021年10月2日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.8k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      15 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">浅谈数据库的锁(一)</h1>
+            
+            <div class="markdown-body">
+              <h3 id="全局锁和表锁-—-server层"><a href="#全局锁和表锁-—-server层" class="headerlink" title="全局锁和表锁 — server层"></a>全局锁和表锁 — server层</h3><h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>​    顾名思义，全局锁就是给整个数据库实例进行加锁。命令是<code>Flush tables with read lock</code>。</p>
+<p>​    当需要整个数据库进入只读状态时，就用这个命令。<strong>一般来说,只有全局备份才会使用这个命令，但即使是做全局备份，我也不推荐使用这个锁。</strong></p>
+<p>​    因为对全局加锁，带来的坏处很多很多。</p>
+<ul>
+<li><p>对全局进行加锁，那么基本上所有操作都会被阻塞，通常情况业务就会停摆。</p>
+</li>
+<li><p>如果在从库进行备份，主库传来的binlog，从库不能执行。这会加大主从数据库之间的延迟</p>
+</li>
+<li><p>通过Read - View来进行全局备份，效率更高。</p>
+</li>
+</ul>
+<h5 id="保留全局锁的原因"><a href="#保留全局锁的原因" class="headerlink" title="保留全局锁的原因"></a>保留全局锁的原因</h5><p>​    为了让不支持事务的存储引擎也能够保持一致性。全局锁，每次只会让一个“事务”操作数据库。</p>
+<span id="more"></span>
+
+<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><p>MySQL里面表级别的锁有两种:</p>
+<ul>
+<li>一种是表锁</li>
+<li>另一种是元数据锁 (meta data lock，MDL)。</li>
+</ul>
+<h5 id="表锁-—-DML"><a href="#表锁-—-DML" class="headerlink" title="表锁 — DML"></a>表锁 — DML</h5><p>表锁，又分为 read lock 和 write lock。表级读写锁有以下特点：</p>
+<ul>
+<li><p>很显然跟其他读写锁一样，都是符合<strong>读读共享，读写和写写是互斥的</strong></p>
+</li>
+<li><p>除此以外，还有另外 表锁不仅限制别的事务的操作，还有限制当前持有锁的事务的操作</p>
+</li>
+</ul>
+<figure class="highlight css"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><pre><code class="hljs css">特别值得注意的有以下两点，其他都跟别读写规则一样<br><span class="hljs-number">1</span>.持有读锁的事务<span class="hljs-selector-tag">A</span> 会阻塞想要修改该对象的事务<span class="hljs-selector-tag">B</span><br><span class="hljs-number">2</span>.持有读锁的事务<span class="hljs-selector-tag">A</span>，接下来事务<span class="hljs-selector-tag">A</span>也只能对该对象进行读操作，写操作也是不允许的。<br></code></pre></td></tr></table></figure>
+
+
+
+<h5 id="MDL锁-—-DDL"><a href="#MDL锁-—-DDL" class="headerlink" title="MDL锁 — DDL"></a>MDL锁 — DDL</h5><p>​    为什么要有MDL锁？想象一下这种场景，事务A在对表1进行查询(查询到一半)，此时另外一个事务B要对表进行结构上的增加字段。</p>
+<p>​    那么，我们希望查询出来的结果，一半是旧的表结构，另一半是新的表结构，多一些字段吗？显然不。</p>
+<p>​    因此，就需要额外的措施去进行一下限制。但是这依靠<strong>表读写锁是做不到的。因为表读写锁，仅仅限制的是DML操作，对DDL操作没有做任何限制。</strong></p>
+<p>​    因此，需要另外一种锁去限制表的DDL操作，也就是<strong>MDL锁</strong></p>
+<p><strong>MDL如何起作用？</strong></p>
+<p>其实它的作用原理，跟读写锁非常相似:</p>
+<ul>
+<li><p>当事务对表的数据做 DML操作时，事务对该表加 MDL读锁。</p>
+<ul>
+<li>因为读锁之间共享，所以不影响别的事务对表的MDL操作</li>
+</ul>
+</li>
+<li><p>当事务要对表做DDL操作时，事务对表加MDL写锁。</p>
+<ul>
+<li>因为读写之间互斥，只要有事务在DML，那么表结构修改就会被阻塞</li>
+<li>同理，只要DDL还没被提交，那么别的事务对表的DML就会被阻塞</li>
+<li>这样保证了，查询出来的数据，结构都是一样的</li>
+</ul>
+</li>
+</ul>
+<h5 id="给表加字段的坑"><a href="#给表加字段的坑" class="headerlink" title="给表加字段的坑"></a>给表加字段的坑</h5><p><strong>有时候给表加一个字段，导致整个库挂了。</strong></p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185917151.png" srcset="/img/loading.gif" lazyload alt="1633185917151"></p>
+<ul>
+<li>sessionA先启动，拿到MDL读锁</li>
+<li>sessionB启动拿到读锁，并执行</li>
+<li>sessionC需要修改表结构，申请写锁，被阻塞。</li>
+<li>sessionD想要申请读锁，<strong>但是被阻塞住了</strong><ul>
+<li><strong>个人猜测，申请锁应该是通过一个队列，类似对头阻塞的机制</strong></li>
+</ul>
+</li>
+</ul>
+<p>​    因此，sessionC被阻塞其实没什么关系，但是会导致sessionC后面的所有查询事务都被阻塞了。<strong>最主要的原因就是，事务中某个语句申请一把锁。该锁是会等整个事务结束才把锁释放。</strong></p>
+<h3 id="行锁-—-各自引擎具体实现"><a href="#行锁-—-各自引擎具体实现" class="headerlink" title="行锁 — 各自引擎具体实现"></a>行锁 — 各自引擎具体实现</h3><div class="code-wrapper"><pre><code class="hljs"> MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所有的引擎都支持行锁，比如 MyISAM 引擎就不支持行锁。
+</code></pre></div>
+<p>​    不支持行锁意味着并发控制只能使用表锁，对于这种引擎的表，同一张表上任何时刻只能有一个更新在执行，这就会影响到业务并发度。</p>
+<h4 id="两段锁协议-2PC"><a href="#两段锁协议-2PC" class="headerlink" title="两段锁协议 2PC"></a>两段锁协议 2PC</h4><p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185936238.png" srcset="/img/loading.gif" lazyload alt="1633185936238"></p>
+<p>​    在这个流程中，实际上事务B仍旧会阻塞。<strong>实际上事务 B 的 update 语句会被阻塞，直到事务 A 执行 commit 之后，事务 B 才能继续执行。</strong> 为什么？</p>
+<ul>
+<li><p>当一个事务中，具体到某个语句执行，该语句需要行锁，才会去申请</p>
+</li>
+<li><p>当该语句执行完毕，行锁不会马上释放，而是等到整个事务结束才会释放。</p>
+</li>
+<li><p>因此，我们在一个事务中，尽量把需要行锁的语句进行后置。</p>
+</li>
+</ul>
+<h4 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h4><p>​    行的读写锁，功能我就不详细讲了。跟普通读写锁很类似，下面我来讲一下意向锁。为什么要有意向锁？我们可以想象一些以下这个场景：</p>
+<p>​    当一个事务A想对表加一个表锁。因为表锁和行锁存在一定的互斥关系，那么它就必须对全表的数据进行扫描，确定是否有行锁，如果没有行锁则进行加锁。</p>
+<p>​    这个效率实在太低了，难以让人接受！</p>
+<p><strong>解决办法</strong></p>
+<ul>
+<li>如果我们在对表某个数据加行锁的时候，能不能在表上面打一个tag。</li>
+<li>当别的事务想要加表锁，看到tag就知道，目前该表中存在行锁，那么加表锁的操作就会阻塞</li>
+</ul>
+<p>这种解决思路就称为意向锁。</p>
+<h4 id="deal-lock-和-检测"><a href="#deal-lock-和-检测" class="headerlink" title="deal lock 和 检测"></a>deal lock 和 检测</h4><p><strong>解决死锁的策略</strong></p>
+<ul>
+<li>阻塞超时等待，等待到一定时间放弃。</li>
+<li>死锁检测，当发生死锁后主动回滚死锁中某一个事务，让破坏死锁的条件</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/MySQL/">MySQL</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/why-B-tree/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">why B+ tree?</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/data-replicate/">
+                        <span class="hidden-mobile">浅谈数据复制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>
