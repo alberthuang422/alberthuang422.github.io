@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>01-13 以太坊1410多单复盘</title>
+    <link href="/2023/02/07/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/01-13-eth-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/"/>
+    <url>/2023/02/07/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/01-13-eth-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/</url>
+    
+    <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>1、当时市场大背景很好，美国当时CPI见顶，利好风险资产<br>2、当时eth走了一段很强的趋势，上涨力量明显，日线如下图所示。<strong>这里显示上涨的力量很强，说明多头暂时掌控了市场</strong></p><p><img src="/../../images/01-13-eth-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20230208202425920.png" alt="image-20230208202425920"></p><h3 id="开单逻辑"><a href="#开单逻辑" class="headerlink" title="开单逻辑"></a>开单逻辑</h3><p>​    <strong>开单前无非就是思考几个问题，1、市场大背景 2、波段点 3、寻找形态 4、信号K线</strong></p><p>1、市场背景在上面已经分析了毫无疑问的多头趋势，在日线上有大量连续的多头K线，重合程度很小</p><p>2、从日线来看，市场越过1350这个波段点后，继续上涨，并没有回调，明显市场有一种急迫感</p><p>3、这时候，市场在1小时图上，走了一个几乎很完美的双重底</p><ul><li>第一腿下跌的时候，买盘很强劲</li><li>有一根很强的阳线，大幅度突破第一腿下跌，显示了多头的力量</li><li>第二次下跌，在MA30均线处停止了获得了支撑，形成了一个更高低点</li><li>这时候就已经集齐双重底最完美的三个要素，强趋势，强阳线突破，更高低点。很完美的双重顶</li></ul><p><img src="/../../images/01-13-eth-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20230208203723957.png" alt="image-20230208203723957"></p><p>4、在1410寻找高2开单，杠杆倍数20（其实直接入场问题也不大）</p><ul><li>入场之后，市场盘整了一段时间，但是没有跌破1400位置</li><li>然后调整完成后，两段急速拉升到1640左右</li><li>后面在回测的过程中分批进行平仓，<strong>总体收益超过200%</strong></li></ul><p><img src="/../../images/01-13-eth-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20230208204117539.png" alt="image-20230208204117539"></p><h3 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h3><ul><li>这是一次很完美的双重底，各种分析验证得也是相当正确的</li><li>唯一美中不足可能是当时突破1450的时候可以考虑挂突破单加仓</li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>交易</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>交易复盘</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>高级波段技术分析 --- 双重顶底</title>
     <link href="/2023/02/05/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E7%AC%AC12%E7%AB%A0-%E5%8F%8C%E9%87%8D%E9%A1%B6%E5%BA%95/"/>
     <url>/2023/02/05/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E7%AC%AC12%E7%AB%A0-%E5%8F%8C%E9%87%8D%E9%A1%B6%E5%BA%95/</url>
@@ -38,9 +63,9 @@
     
     <categories>
       
-      <category>MIT6.824</category>
-      
       <category>分布式</category>
+      
+      <category>MIT6.824</category>
       
     </categories>
     
@@ -59,9 +84,9 @@
     
     <categories>
       
-      <category>MIT6.824</category>
-      
       <category>分布式</category>
+      
+      <category>MIT6.824</category>
       
     </categories>
     
@@ -99,9 +124,9 @@
     
     <categories>
       
-      <category>MIT6.824</category>
-      
       <category>分布式</category>
+      
+      <category>MIT6.824</category>
       
     </categories>
     
@@ -158,9 +183,9 @@
     
     <categories>
       
-      <category>MIT6.824</category>
-      
       <category>分布式</category>
+      
+      <category>MIT6.824</category>
       
     </categories>
     
