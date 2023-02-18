@@ -16,20 +16,20 @@
   <meta name="author" content="albertHuang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="​    今天我们来讨论一个问题，“为什么单线程模型的redis，会这么快？”。在我们学习redis的时候，给我们的第一感觉就是，它很快。然而，慢慢深入的学习中，我们发现redis实际上是一个单线程模型。然而单线程模型跟快，往往是矛盾的。那么，今天我们就来探讨一下这个问题，redis的单线程模型是什么，而且为什么它很快? ​    要弄明白这个问题，我们要了解redis单线程的设计以及多路复用的机">
+    <meta name="description" content="讨论了为什么redis很快，以及redis的单线程模型是什么。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="redis单线程为什么这么快？">
 <meta property="og:url" content="http://example.com/2021/11/04/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/why-single-thread-model-in-redis-is-so-fast/index.html">
 <meta property="og:site_name" content="cb&#39;s blog">
-<meta property="og:description" content="​    今天我们来讨论一个问题，“为什么单线程模型的redis，会这么快？”。在我们学习redis的时候，给我们的第一感觉就是，它很快。然而，慢慢深入的学习中，我们发现redis实际上是一个单线程模型。然而单线程模型跟快，往往是矛盾的。那么，今天我们就来探讨一下这个问题，redis的单线程模型是什么，而且为什么它很快? ​    要弄明白这个问题，我们要了解redis单线程的设计以及多路复用的机">
+<meta property="og:description" content="讨论了为什么redis很快，以及redis的单线程模型是什么。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88redis%E5%8D%95%E7%BA%BF%E7%A8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BF%AB%EF%BC%9F/image-20211104161327695.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88redis%E5%8D%95%E7%BA%BF%E7%A8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BF%AB%EF%BC%9F/image-20211104172608591.png">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
 <meta property="article:published_time" content="2021-11-03T18:57:55.000Z">
-<meta property="article:modified_time" content="2023-02-04T10:19:34.047Z">
+<meta property="article:modified_time" content="2023-02-18T15:50:04.704Z">
 <meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="中间件">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/%E6%B5%85%E8%B0%88redis%E5%8D%95%E7%BA%BF%E7%A8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BF%AB%EF%BC%9F/image-20211104161327695.png">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
   
   
   <title>redis单线程为什么这么快？ - cb&#39;s blog</title>
@@ -247,8 +247,6 @@
             <div class="markdown-body">
               <p>​    今天我们来讨论一个问题，“为什么单线程模型的redis，会这么快？”。在我们学习redis的时候，给我们的第一感觉就是，它很快。然而，慢慢深入的学习中，我们发现redis实际上是一个单线程模型。然而单线程模型跟快，往往是矛盾的。那么，今天我们就来探讨一下这个问题，<strong>redis的单线程模型是什么，而且为什么它很快</strong>?</p>
 <p>​    要弄明白这个问题，我们要了解redis单线程的设计以及多路复用的机制。So，let’s go！</p>
-<span id="more"></span>
-
 <h2 id="Redis单线程模型"><a href="#Redis单线程模型" class="headerlink" title="Redis单线程模型"></a>Redis单线程模型</h2><p>​    首先，我们需要搞清楚redis的单线程模型它到底指的是什么？<strong>实际上，redis的单线程模型是指Redis的网络IO和键值对读写是由一个现场完成的，该线程所做的东西，就是保证redis能够对外提供存储和读取服务。</strong></p>
 <p>​    然而，redis的其他功能就不是由上面说的线程去做的。举个例子，redis的bgsave功能就是fork一个子进程出来，后台进行数据的备份。类似地还有很多，比如异步删除，集群的数据同步都是fork出不同的进程来进行处理。</p>
 <h3 id="为什么redis不采用多线程？"><a href="#为什么redis不采用多线程？" class="headerlink" title="为什么redis不采用多线程？"></a>为什么redis不采用多线程？</h3><p>​    首先要明确一点，<strong>redis是一个IO密集型的程序。</strong></p>
@@ -315,10 +313,17 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/Redis/">Redis</a>
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
                     
                   </div>
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a>
+                    
+                  </div>
                 
               </div>
               

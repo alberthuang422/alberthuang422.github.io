@@ -23,13 +23,13 @@
 <meta property="og:site_name" content="cb&#39;s blog">
 <meta property="og:description" content="全局锁和表锁 — server层全局锁​    顾名思义，全局锁就是给整个数据库实例进行加锁。命令是Flush tables with read lock。 ​    当需要整个数据库进入只读状态时，就用这个命令。一般来说,只有全局备份才会使用这个命令，但即使是做全局备份，我也不推荐使用这个锁。 ​    因为对全局加锁，带来的坏处很多很多。  对全局进行加锁，那么基本上所有操作都会被阻塞，通常情">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185917151.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185936238.png">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
 <meta property="article:published_time" content="2021-10-02T14:43:45.000Z">
-<meta property="article:modified_time" content="2023-02-04T10:17:17.827Z">
+<meta property="article:modified_time" content="2023-02-18T15:48:56.805Z">
 <meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%94%81/1633185917151.png">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
   
   
   <title>浅谈数据库的锁(一) - cb&#39;s blog</title>
@@ -343,10 +343,17 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/MySQL/">MySQL</a>
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
                     
                   </div>
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/MySQL/">MySQL</a>
+                    
+                  </div>
                 
               </div>
               

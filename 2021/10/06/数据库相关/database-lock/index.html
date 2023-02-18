@@ -23,28 +23,13 @@
 <meta property="og:site_name" content="cb&#39;s blog">
 <meta property="og:description" content="前言​    今天这篇文章，讲的主要是下面两个内容：(1)gap lock 和 next - key lock (2)锁，到底是锁的是什么东西？ 并且想要解决几个令人困惑的问题  在主键，唯一键，普通索引，以及非索引字段加锁，究竟锁住来了什么东西？  不同的查询条件，锁住什么东西？  条件中的等值不存在，锁住什么？">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633519488361.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633523911801.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633525680043.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633524009750.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633524119971.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633524553095.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633524712913.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633524903236.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633526324007.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633601439484.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633601727061.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633602359760.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633526953542.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633603077198.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633604169520.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633604640176.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633604773965.png">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
 <meta property="article:published_time" content="2021-10-05T16:53:05.000Z">
-<meta property="article:modified_time" content="2023-02-04T07:24:43.002Z">
+<meta property="article:modified_time" content="2023-02-18T15:42:59.310Z">
 <meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E9%94%81/1633519488361.png">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
   
   
   <title>浅谈数据库的锁(二) - cb&#39;s blog</title>
@@ -411,10 +396,17 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/MySQL/">MySQL</a>
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
                     
                   </div>
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/MySQL/">MySQL</a>
+                    
+                  </div>
                 
               </div>
               

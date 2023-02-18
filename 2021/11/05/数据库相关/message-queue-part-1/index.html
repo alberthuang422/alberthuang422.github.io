@@ -16,20 +16,21 @@
   <meta name="author" content="albertHuang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="消息队列可以解决哪些问题？结合我们日常的开发工作，来聊聊怎么使用消息队列。因为我实习的时候是做电商业务的，所以接下来的大部分例子，我都是以电商业务来举例。 异步处理在电商的一个下单步骤中，大致可以分为以下步骤：  前端收到请求 网关进行转发 风控 库存锁定（扣库存） 对应的购物车扣减，更新统计数据……  ​    如果这个步骤没有优化，并且是同步进行处理的。那么这个流程的调用链就会很长，客户端发起">
+    <meta name="description" content="介绍了关于消息队列的一些选型和使用场景">
 <meta property="og:type" content="article">
 <meta property="og:title" content="消息队列学习笔记 - 1">
 <meta property="og:url" content="http://example.com/2021/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/message-queue-part-1/index.html">
 <meta property="og:site_name" content="cb&#39;s blog">
-<meta property="og:description" content="消息队列可以解决哪些问题？结合我们日常的开发工作，来聊聊怎么使用消息队列。因为我实习的时候是做电商业务的，所以接下来的大部分例子，我都是以电商业务来举例。 异步处理在电商的一个下单步骤中，大致可以分为以下步骤：  前端收到请求 网关进行转发 风控 库存锁定（扣库存） 对应的购物车扣减，更新统计数据……  ​    如果这个步骤没有优化，并且是同步进行处理的。那么这个流程的调用链就会很长，客户端发起">
+<meta property="og:description" content="介绍了关于消息队列的一些选型和使用场景">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-1/image-20211105215612029.png">
-<meta property="og:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-1/image-20211106195714386.png">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
 <meta property="article:published_time" content="2021-11-05T10:41:33.000Z">
-<meta property="article:modified_time" content="2023-02-04T10:15:53.852Z">
+<meta property="article:modified_time" content="2023-02-18T15:47:25.058Z">
 <meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="消息队列">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/%E6%B5%85%E8%B0%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-1/image-20211105215612029.png">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
   
   
   <title>消息队列学习笔记 - 1 - cb&#39;s blog</title>
@@ -255,7 +256,7 @@
 <li>对应的购物车扣减，更新统计数据……</li>
 </ul>
 <p>​    如果这个步骤没有优化，并且是同步进行处理的。那么这个流程的调用链就会很长，客户端发起一个下单请求，会等待很久才能返回一个结果，这造成的用户体验是很差的。</p>
-<span id="more"></span>
+<!--more-->
 
 <p>​    但是，上述步骤中，并不是所有操作的实时性要求都很高。<strong>经过分析，我们可以发现，只要库存锁定了，我们就可以认为，这笔订单已经生成了。其他的一些譬如统计的操作，可以让后台相对来说不那么着急执行。</strong>这实际上，是一种异步提高性能的操作，可以交给消息队列来做。</p>
 <p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-1/image-20211105215612029.png" srcset="/img/loading.gif" lazyload alt="image-20211105215612029"></p>
@@ -436,10 +437,19 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/Message-Queue/">Message Queue</a>
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
                     
                   </div>
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+                    
+                  </div>
                 
               </div>
               
