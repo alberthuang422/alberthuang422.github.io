@@ -290,10 +290,16 @@
     
     <categories>
       
-      <category>分布式</category>
+      <category>数据库</category>
       
     </categories>
     
+    
+    <tags>
+      
+      <tag>分布式</tag>
+      
+    </tags>
     
   </entry>
   
@@ -470,10 +476,14 @@
       
       <category>Operate System</category>
       
-      <category>MIT6.S081</category>
-      
     </categories>
     
+    
+    <tags>
+      
+      <tag>MIT6.S081</tag>
+      
+    </tags>
     
   </entry>
   
