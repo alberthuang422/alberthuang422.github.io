@@ -1,0 +1,609 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文主要介绍了交易区间的概念，以及交易区间的形成原因，以及交易区间的交易策略。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高级波段技术分析 --- 交易区间">
+<meta property="og:url" content="http://example.com/2023/02/18/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/index.html">
+<meta property="og:site_name" content="cb&#39;s blog">
+<meta property="og:description" content="本文主要介绍了交易区间的概念，以及交易区间的形成原因，以及交易区间的交易策略。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/crypto.png">
+<meta property="article:published_time" content="2023-02-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-02-23T15:57:22.403Z">
+<meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="交易相关">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/crypto.png">
+  
+  
+  <title>高级波段技术分析 --- 交易区间 - cb&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/cat.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="高级波段技术分析 --- 交易区间">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2023-02-18 00:00" pubdate>
+        2023年2月18日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.7k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      32 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">高级波段技术分析 --- 交易区间</h1>
+            
+            <div class="markdown-body">
+              <h2 id="一、交易区间的一些入场策略"><a href="#一、交易区间的一些入场策略" class="headerlink" title="一、交易区间的一些入场策略"></a>一、交易区间的一些入场策略</h2><p>1、当市场处于交易区间，交易者应该<strong>遵循“高买低卖”的策略，同时要谨记一件事情，在交易区间内，你要做的是刮头皮交易，而非波段交易。你只需要赚取小额的利润，而不是期望它突破。</strong></p>
+<ul>
+<li>在交易区间中，你只需要刮头皮，在合适的位置进行高买低卖，到了位置，甚至说接近，就需要进行止盈</li>
+<li>在交易区间里面，经常存在突破，但是这些突破大部分都会失败。<strong>这就说明了，在交易区间内，你要设置好止损，有可能你的止损会被某个假的高点给打掉。</strong></li>
+<li>市场处于双边交易时，经常会出现回调，如果你在区间内入场后，市场可能不会马上朝着你预测的方向前进，而是盘整或者测试入场前的极点，这都是正常现象</li>
+</ul>
+<p>2、交易新手比较好的建仓形态，应该用停损单入场，确保在入场时向着有利的方向进行。在交易区间中比较好的入场策略：</p>
+<ul>
+<li>底部高2入场形态，双重底也不错，只要二次测试或者二次发力都是一个不错的买入信号</li>
+<li>同理低2卖空形态</li>
+<li>在交易区间底部入场，尤其突破下降趋势线后的二次入场</li>
+</ul>
+<p><img src="/../../images/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/image-20230218211903624.png" srcset="/img/loading.gif" lazyload alt="突破下降趋势线后"></p>
+<ul>
+<li>当在底部形成一个牛旗(下行通道)买入</li>
+<li>当价格，突破了区间顶部，但是没有前行太远就出现动能不足，出现反转K线或者熊旗这种。不过最好在不太长的阴线中卖空，<strong>因为如果信号K线太长，止损有点难做，不过也还行可以用定额止损来控制</strong><ul>
+<li>这里还要结合其他东西来看，比如是否前面有趋势，然后均线位置判断</li>
+</ul>
+</li>
+</ul>
+<p>3、使用限价单入场，属于比较左侧的激进入场，因为预测价格会在该位置进行折返。</p>
+<ul>
+<li>区间底部，在一轮急速下挫，这时候用市价单买入，或者用限价单在上一个波段低点中买入。<ul>
+<li>虽然在交易区间中，大部分突破都会失败，但是个人觉得这样做还是需要一定的理由支撑才比较好直接入场（比如背离、解套之类的）</li>
+<li>并且如果信号K线过长，一般都是需要比平常更宽的止损</li>
+</ul>
+</li>
+<li>区间底部附近的一根大型下跌趋势K线中买入，这很可能代表淡出&#x2F;衰竭性抛售</li>
+<li>用限价单在低1低2中买入，预期区间底部的低2失败</li>
+</ul>
+<h2 id="二、窄幅交易区间"><a href="#二、窄幅交易区间" class="headerlink" title="二、窄幅交易区间"></a>二、窄幅交易区间</h2><p>1、窄幅交易区间是一个特殊的交易区间</p>
+<ul>
+<li>区间里面有很多重叠K线</li>
+<li>区间里面多次反转，很多人被套</li>
+<li>很多十字星线，这种在交易时应该最为慎重，是铁丝网形态，新手应该避免交易该形态</li>
+</ul>
+<p>2、多空双方在窄幅交易区间势均力敌</p>
+<ul>
+<li>市场在窄幅交易区间内，不一定代表大部分机构停止交易，这里交易量通常都处于平均值，<strong>双方都在争夺后续趋势的走向。</strong></li>
+<li>有交易者在区间里面刮头皮，然后有些交易者在加仓试图争夺通道的方向<ul>
+<li>当一个窄幅交易区间持续时间很长，很多多头的仓位，都达到上限，<strong>然后市场向下测试底部，这时候如果没有更多的多头介入，市场就会向下突破，造成更多多头止损出场。</strong></li>
+<li>举例而言，如果窄幅区间上行突破，就表明空头不愿意在该价格加仓</li>
+<li>随着一方放弃、清仓，趋势可能加速</li>
+</ul>
+</li>
+</ul>
+<p>3、失败的突破和反转在窄幅区间中非常常见</p>
+<ul>
+<li>在窄幅交易区间里面经常会出现很好的信号K线，但是在其后入场的，通常会被反转，被套住。</li>
+<li>因此如果没有特别大的把握不要尝试在突破或者反转中入场。<strong>等待明确突破后，加入顺势的行情；或者等待回调，在回调中买入是比较明智的</strong>。</li>
+</ul>
+<p>4、在窄幅交易区间内，如果特别紧凑，区间高度不足一个atr，最好不要入场，因为空间太小，止损不好做很容易打到止损</p>
+<ul>
+<li><strong>最好的做法应该是等待窄幅交易区间突破，然后判断其成功还是失败。</strong></li>
+<li>这里不管是盘整的交易区间还是牛旗熊旗这种通道，只要是十分紧凑的，交易都非常困难</li>
+</ul>
+<p>5、趋势形成的窄幅交易区间<strong>通常是一个持续形态</strong></p>
+<ul>
+<li>当出现高潮反转之后的窄幅交易区间，价格朝着任意一个方向突破的概率都很高，<strong>行情变得很不确定</strong></li>
+<li>如果<strong>先前的趋势强劲</strong>，那么向着趋势方向突破的概率比较高，特别是<strong>交易区间大部分K线在均线的上方</strong>，那么上行突破有比较大的把握，这里就很有可能在区间内进行一个高2的调整。</li>
+<li>如果趋势不够强劲，突破的概率会降低，并且增加了突破之后成为一个更大的交易区间可能性，<strong>但是最终来看还是会突破，因为所有交易区间，在更高的时间角度来看，是一个回调形态</strong><ul>
+<li>从这点来看，你只是在更高级别的K线上，在趋势回调中介入市场</li>
+<li>但是如果仅凭这样贸然入场，你的持仓会变得很难受，即使突破成功上涨的过程可能并不顺利。</li>
+<li>但是要根据趋势的强度，以及是否有过强势反转，以及在均线的位置，去假设恢复趋势的概率在51～55左右，如果没有强劲趋势，恢复的概率不会太高，仅是超过50</li>
+</ul>
+</li>
+<li><strong>在窄幅区间中交易，最好不要用非常宽的止损</strong>，因为这样你是预期最坏的结果是应形成一个更大交易区间，这样盈亏比就不划算了，变成你是在区间中间的位置入场，这样胜率只有50，盈亏比不确定</li>
+<li>如果在窄幅交易区间进行交易，如果市场没有按照你的预期进行，<strong>那么最好的做法就是离场，等待更大的交易区间出现，然后顺势入场</strong></li>
+<li>窄幅交易区间，是一个强力的磁体，如果没有特别大的把握，突破后通常会回测该地方，测试磁体的概率比较大</li>
+</ul>
+<p>6、窄幅交易区间中<strong>经常出现反转，每一轮反转都有失败的突破构成。</strong></p>
+<ul>
+<li>比如说一根空头信号K线在窄幅交易区间内被处罚后，接着一根更出色的上涨信号K线出现，这时候就不应该死扛，应该认为有空头在一个弱势的信号中被套</li>
+<li>永远不要和市场做相反的事情，在窄幅区间里面，用止损挂单做突破，盈亏比不是很理想。</li>
+<li><strong>大多数窄幅交易区间中的突破，都会在一两根K线中失败</strong><ul>
+<li>但是多数情况下，如果确认了该区域是持续形态，那么突破的失败其实很有可能是突破回调，这时候用突破单顺势入场</li>
+<li>如果突破失败的K线，变成了反转，突破了区间的另一部分区域的边界，<strong>可以选择在底部一个跳点位置尝试卖空</strong></li>
+</ul>
+</li>
+</ul>
+<p>7、交易区间后形成的窄幅交易区间，突破经常会失败，或者不会前行很远。然而，如果先前有一轮强劲的趋势，然后形成一个窄幅交易区间，突破后更加倾向于恢复趋势。</p>
+<ul>
+<li>如果没有很好的把握，不要在铁丝网的突破中入场，最好等待一根趋势K线<ul>
+<li>这根K线虽然是一个很有说服力的K线，但是失败概率仍然很高，因为是一个很强的磁体，窄幅交易区间属于双边交易</li>
+<li>最好等待突破回调、或者出现连续两根趋势K线，这样的突破才有比较大的把握</li>
+</ul>
+</li>
+<li>当一个顺势突破铁丝网形态后，很快就失败且市场迎来比较深幅度的回调，<strong>这里有可能突破已经</strong></li>
+</ul>
+<p>8、如果一轮趋势回调至了均线处，在均线附近铁丝网，可以认为这已经到了回调的终点，<strong>尤其是这里窄幅区间的影线并不是特别长的时候</strong></p>
+<h2 id="三、图表解读"><a href="#三、图表解读" class="headerlink" title="三、图表解读"></a>三、图表解读</h2><h3 id="1-交易区间刮头皮"><a href="#1-交易区间刮头皮" class="headerlink" title="(1)交易区间刮头皮"></a>(1)交易区间刮头皮</h3><p><img src="/../../images/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/image-20230218221923654.png" srcset="/img/loading.gif" lazyload alt="image-20230218221923654"></p>
+<p>1、在K线10～K18区域是一个交易区间，可以用限价单进行一些操作</p>
+<ul>
+<li>当市场跌破K10的时候；跌破K13时；以及跌破K15时候，都是一个不错的直接买入，<strong>因为都是大型K线直接到区间底部附近，这里进行买入胜率其实还行</strong></li>
+</ul>
+<p>2、如果交易者在区间底部买入，那么他们就应该在区间顶部卖出。甚至一定程度上，可以反手交易</p>
+<ul>
+<li>在K16双重底买入的人，应该在K7附近的价格买入，然后当价格运行到K20的时候是一个不错的止盈位置</li>
+<li>如果在K20止盈的人，马上做空可能不太合适，但是到了K24的时候出现了双重顶。</li>
+</ul>
+<p>3、空头愿意在测试K7高点的价位附近卖空，因为如果多头力量强势，应该在K7接近均线时有更加强势的力量，而不是这种停顿</p>
+<p>4、K10是从最高点下来的第三次下跌，虽然说一般下跌有三段。<strong>但是比较好的作坊还是等待，突破回调再进行买入。</strong></p>
+<ul>
+<li>因为多头担心下跌的幅度这么大，可能第一次突破会失败</li>
+</ul>
+<h3 id="2-窄幅交易区间"><a href="#2-窄幅交易区间" class="headerlink" title="(2)窄幅交易区间"></a>(2)窄幅交易区间</h3><p><img src="/../../images/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/image-20230223213909066.png" srcset="/img/loading.gif" lazyload alt="窄幅交易区间"></p>
+<ul>
+<li><p>K2～K7这里进入了窄幅交易区间</p>
+<ul>
+<li>K1前面重叠了很多K线，反转了很多次</li>
+<li>K2向下突破后，后面接了一根反转K线</li>
+<li>后面K线实体越来越小，预期进入窄幅交易区间</li>
+</ul>
+</li>
+<li><p>K5、K6向上刺破高点；低点越来越高，收敛成一个三角形</p>
+<ul>
+<li>这里K线几乎维持在均线上方，<strong>显示多头比较强劲</strong></li>
+<li>两次刺破失败之后，第三次突破成功的概率更大<ul>
+<li>当然这里每次触碰高点都会造成筹码的松动</li>
+<li>但是多次失败也可能让多头丧失信心</li>
+<li>还是要配合均线、趋势来判断</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>K9是突破回调，在这里进行一次高一高二是一个不错的机会</p>
+</li>
+<li><p>另外一个买点是回调到均线的窄幅通道，到均线处出现了一根比较大的阳线K10，这里挂一个突破单在阳线上，是一个不错买入</p>
+</li>
+</ul>
+<h3 id="3-牛旗熊旗中的交易区间"><a href="#3-牛旗熊旗中的交易区间" class="headerlink" title="(3)牛旗熊旗中的交易区间"></a>(3)牛旗熊旗中的交易区间</h3><p><img src="/../../images/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/image-20230223232714640.png" srcset="/img/loading.gif" lazyload alt="牛腿的窄幅交易区间"></p>
+<ul>
+<li>有时候窄幅交易区间，同时是熊旗和牛旗的回调<ul>
+<li>K6～K8的窄幅交易区间是K3～K4的回调</li>
+<li>同时也可以看作是K1～K3的回调</li>
+<li>两种解读都可以，但是多数K线都处于均线下方，向下突破的可能会更大，但是不会超过60%。不然也不会出现窄幅交易区间</li>
+<li>此时两种方向都不太确定，市场处于突破模式</li>
+</ul>
+</li>
+<li>K3～K4的上涨行情，<strong>突破下降趋势线后，在K6后形成一个更高的低点，然后市场进入一个窄幅交易区间</strong><ul>
+<li>然后由于K1～K3的下跌是三推，并且在昨日低点创下新低之后便开始反转上涨。<strong>因此可以假设，会有一段两腿的上涨</strong></li>
+<li>K2～K4的行情是一个很好的上涨通道，因此是第一腿，其中上涨K线很多，看起来买呀不错</li>
+<li>K6与K3形成一个双重底，但是这里缺少一些要素。但是可以作为一个参考，只要K6不破，有可能形成一个等比上涨</li>
+<li>K8收盘后，一根很大阳线突破K4，有理由挂突破单在K8追多</li>
+<li>K9是突破后的一根小孕线，在后面挂一个挑点的突破单是一个不错的交易</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-窄幅交易区间突破演变成更大的区间"><a href="#4-窄幅交易区间突破演变成更大的区间" class="headerlink" title="(4)窄幅交易区间突破演变成更大的区间"></a>(4)窄幅交易区间突破演变成更大的区间</h3><p><img src="/../../images/%E4%BA%A4%E6%98%93%E5%8C%BA%E9%97%B4/image-20230223233515065.png" srcset="/img/loading.gif" lazyload alt="变成更大的交易区间"></p>
+<ul>
+<li><p>在窄幅交易区间买入的人，无论如何在K6下跌后，都会止损离场</p>
+</li>
+<li><p>K3出现，铁丝网出现，大多数交易者在等待突破</p>
+</li>
+<li><p>K6是一个下跌趋势K线突破，然后均线处形成一个内内形态，引出一笔做多的刮头皮交易。</p>
+</li>
+<li><p>K7是K6下行突破失败后的上行失败，<strong>失败的失败是第二入场点</strong></p>
+</li>
+<li><p><strong>然后这里是扩散三角形，是一个强力的磁体，即使突破价格也会很快测试到这里，导致大多数突破会失败</strong></p>
+</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E4%BA%A4%E6%98%93/">交易</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/">交易相关</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/02/17/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/02-17-BTC-%E5%85%AC%E5%B8%83CPI%E5%90%8E%E5%87%A0%E6%AC%A1%E4%BA%A4%E6%98%93%E6%9C%BA%E4%BC%9A%E5%A4%8D%E7%9B%98/">
+                        <span class="hidden-mobile">02-17 cpi前后btc交易机会复盘</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>
