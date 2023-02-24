@@ -1,0 +1,547 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="介绍了关于mapReduce的demo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《the MapReduce》 --- lab1">
+<meta property="og:url" content="http://example.com/2021/12/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mit6-824-lab1-the-mapReduce/index.html">
+<meta property="og:site_name" content="黄成彬的博客">
+<meta property="og:description" content="介绍了关于mapReduce的demo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
+<meta property="article:published_time" content="2021-12-05T09:26:09.000Z">
+<meta property="article:modified_time" content="2023-02-18T15:53:07.030Z">
+<meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="论文">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
+  
+  
+  <title>《the MapReduce》 --- lab1 - 黄成彬的博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/cat.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="《the MapReduce》 --- lab1">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-12-05 17:26" pubdate>
+        2021年12月5日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      11k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      92 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">《the MapReduce》 --- lab1</h1>
+            
+            <div class="markdown-body">
+              <p>&amp;#8195;&amp;#8195;最近稍微有空，就把割了很久的lab1给做了。在做的过程中磕磕碰碰，碰到了不少坑但是也总结了不少经验。感觉对日常的工作还是有不少帮助的，下面就来介绍本次的lab1。</p>
+<!--more-->
+
+<h2 id="MapReduce"><a href="#MapReduce" class="headerlink" title="MapReduce"></a>MapReduce</h2><p>&amp;#8195;&amp;#8195;简单来说MapReduce就是把一个大任务，拆成若干个小的任务。然后把这些任务分发到不同的worker(服务器)上面去运行，然后再把他们执行的结果聚拢到一起，回复给外界。</p>
+<p>&amp;#8195;&amp;#8195;至于原理是什么我就不多说了，有兴趣的可以看看Jeff Dean的论文。 <a target="_blank" rel="noopener" href="http://nil.csail.mit.edu/6.824/2020/papers/mapreduce.pdf">【the MapReduce】</a></p>
+<p>&amp;#8195;&amp;#8195;下面来介绍，如何实现一个简单的MapReduce，这里只介绍master是如何设计，该lab我做下来，感觉最大的难点是在于如何维护metadata。至于worker的设计倒没有什么特别的地方。</p>
+<h2 id="Master-Task相关的数据结构"><a href="#Master-Task相关的数据结构" class="headerlink" title="Master,Task相关的数据结构"></a>Master,Task相关的数据结构</h2><p>​    关于task（map和reduce），其实不难，仅需要把关于task的信息都抽象出来即可。如下</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></div></td><td class="code"><pre><code class="hljs golang"><span class="hljs-keyword">type</span> MapTaskInfo <span class="hljs-keyword">struct</span> &#123;<br>	MapTaskSeq                <span class="hljs-keyword">int</span><br>	MapTaskState              <span class="hljs-keyword">int</span><br>	MapTaskStartTimeStamp     <span class="hljs-keyword">uint64</span><br>	MapTaskAssignedWorkerId   <span class="hljs-keyword">uint64</span><br>	InputFilePathLocation     <span class="hljs-keyword">string</span><br>	IntermediateFileLocation  []<span class="hljs-keyword">string</span><br>&#125;<br><br><span class="hljs-keyword">type</span> ReduceTaskInfo <span class="hljs-keyword">struct</span> &#123;<br>	ReduceTaskSeq                 <span class="hljs-keyword">int</span><br>	ReduceTaskState               <span class="hljs-keyword">int</span><br>	ReduceTaskStartTimeStamp      <span class="hljs-keyword">uint64</span><br>	ReduceTaskAssignedWorkerId    <span class="hljs-keyword">uint64</span><br>	InterMediatePathLocationList  []<span class="hljs-keyword">string</span><br>	OutputFilePathLocation        <span class="hljs-keyword">string</span><br>&#125;<br><br><span class="hljs-comment">// 枚举量</span><br><span class="hljs-keyword">const</span>  (<br>	MAP_TASK_STATE_INIT    = <span class="hljs-number">0</span><br>	MAP_TASK_STATE_RUN     = <span class="hljs-number">1</span><br>	MAP_TASK_STATE_FINISH  = <span class="hljs-number">2</span><br>)<br><br><span class="hljs-keyword">const</span>  (<br>	REDUCE_TASK_STATE_BLOCK    = <span class="hljs-number">-1</span><br>	REDUCE_TASK_STATE_INIT     = <span class="hljs-number">0</span><br>	REDUCE_TASK_STATE_RUN      = <span class="hljs-number">1</span><br>	REDUCE_TASK_STATE_FINISH   = <span class="hljs-number">2</span><br>)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>TaskSeq</strong>:task的序列号，用来区分不同的task</li>
+<li><strong>TaskState</strong>:用来描述每个task的状态</li>
+<li><strong>TaskStartTimeStamp</strong>：master每次分发一个task之后，都会记录该task的分发时间，用于后续的超时判断</li>
+<li><strong>TaskAssignedWorkerId</strong>：记录该task被分发到哪个worker上，这个字段和时间戳有助于提高系统的容错</li>
+<li><strong>InputPath和OutputPath</strong>：用来记录文件读取，和文件输出的路径</li>
+</ul>
+<p>&amp;#8195;&amp;#8195;这里解释一下，<strong>为什么reduce的状态枚举量比map多了一个BLOCK状态。</strong>因为，reduce的输入文件，是map的输出。因此，只有某个reduce的输入数据都准备好之后，它才能够运行。因此，在此之前它都是阻塞状态。</p>
+<p>&amp;#8195;&amp;#8195;下面就是master的数据结构，在我实现的lab中，所设计的Master的数据结构参考了GFS里面的master。<strong>master存储着整个集群的控制信息，以及提供任务分发的接口。</strong></p>
+<p>&amp;#8195;&amp;#8195;这是我一开始设计的Master结构体。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-comment">// 1.最初设计的Master</span><br><span class="hljs-keyword">type</span> Master <span class="hljs-keyword">struct</span> &#123;<br>	<span class="hljs-comment">// Your definitions here.</span><br>	initMapTaskTable          List.list<br>  processMapTaskTable       List.list<br>  doneMapTaskTable          List.list<br>  <br>  initReduceTaskTable.      List.list<br>  processReduceTaskTable    List.list<br>  doneReduceTaskTable       List.list<br>&#125;<br><br><span class="hljs-comment">// 2.后面设计的Master</span><br><span class="hljs-keyword">type</span> Master <span class="hljs-keyword">struct</span> &#123;<br>	<span class="hljs-comment">// Your definitions here.</span><br>	tableMapTask      <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]*MapTaskInfo<br>	mapNum            <span class="hljs-keyword">int</span><br>	tableReduceTask   <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]*ReduceTaskInfo<br>	reduceNum         <span class="hljs-keyword">int</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>先说一下这两种设计各有什么优劣之处。</p>
+<p><strong>(1)从任务分发的角度来看</strong></p>
+<p>&amp;#8195;&amp;#8195;第一种设计，采用了三个队列来存储不同状态的task，<strong>这样就导致分发task的效率会很高，如果想要把一个空的task分发出去，直接从INIT状态的队列中直接取出来，效率很高，复杂度在O(1)。</strong></p>
+<p>&amp;#8195;&amp;#8195;但是，做出同样的操作第二种设计却需要O(n)的时间复杂度。</p>
+<p><strong>(2)从数据的完整性来看</strong></p>
+<p>&amp;#8195;&amp;#8195;在这个角度来看，第一种设计的数据持久型做的不够好，我觉得它其实跟“分布式”有一点点像，<strong>在极端的情况下会数据丢失的。</strong></p>
+<p>&amp;#8195;&amp;#8195;第二种结构，所有状态的task都用一个表来进行管理，这种又有点像”单机“，它的原子性和持久性能达到比较好的保障。</p>
+<p>&amp;#8195;&amp;#8195;这个的具体原因，在下面的<strong>任务分发接口</strong>中会提及。</p>
+<h2 id="Master的接口"><a href="#Master的接口" class="headerlink" title="Master的接口"></a>Master的接口</h2><p>&amp;#8195;&amp;#8195;一开始做这个lab的时候，其实我是有一点懵的。因为MIT给出的实验文件，仅仅只有master提供rpc接口，worker却没有rpc接口。也就是说，master并不能主动向worker分发任务。</p>
+<p>&amp;#8195;&amp;#8195;后来通过查阅文档之后发现，该lab的设计是通过，worker在一个loop中不断的向master请求任务，解决任务，然后恢复master。不断执行这个loop。</p>
+<p>&amp;#8195;&amp;#8195;这种设计方案，有一个好处，就是能够充分利用worker的性能，尽量减少worker闲置的情况发生。</p>
+<h3 id="任务分发"><a href="#任务分发" class="headerlink" title="任务分发"></a>任务分发</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-keyword">type</span> AssignTaskReq <span class="hljs-keyword">struct</span> &#123;<br>	workerId <span class="hljs-keyword">uint64</span><br>&#125;<br><br><span class="hljs-keyword">type</span> AssignTaskReply <span class="hljs-keyword">struct</span> &#123;<br>	replyTaskType		<span class="hljs-keyword">int</span><br>	mapTaskInfo 		*MapTaskInfo<br>	ReduceTaskInfo	*ReduceTaskInfo<br>&#125;<br><br><span class="hljs-comment">// 分发任务的接口</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *Master)</span> <span class="hljs-title">assignTask2Worker</span><span class="hljs-params">(req *AssignTaskReq, rsp *AssignTaskReply)</span> <span class="hljs-title">error</span></span> &#123;<br><br>	mutexLock.Lock()<br>	<span class="hljs-keyword">defer</span> mutexLock.Unlock()<br><br>	<span class="hljs-comment">// 1.check if propre map task for work</span><br>	mapTask,assignMapSuccess := m.getInitMapTaskForAssign()<br>	<span class="hljs-keyword">if</span> assignMapSuccess &#123;<br>		<span class="hljs-comment">// 1. change the info of map task</span><br>		mapTask.MapTaskState = MAP_TASK_STATE_RUN<br>		mapTask.MapTaskStartTimeStamp = <span class="hljs-keyword">uint64</span>(time.Now().Unix())<br>		mapTask.MapTaskAssignedWorkerId = req.workerId<br><br>		<span class="hljs-comment">// 2. set reply</span><br>		rsp.mapTaskInfo = mapTask<br>		rsp.replyTaskType = TASK_TYPE_MAP<br><br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br><br>	<span class="hljs-comment">// 2.try to assign reduce task</span><br>	reduceTask,assignReduceSuccess := m.getInitReduceTaskForAssign()<br>	<span class="hljs-keyword">if</span> assignReduceSuccess &#123;<br>		<span class="hljs-comment">// register reduce task</span><br>		reduceTask.ReduceTaskState = REDUCE_TASK_STATE_RUN<br>		reduceTask.ReduceTaskStartTimeStamp = <span class="hljs-keyword">uint64</span>(time.Now().Unix())<br>		reduceTask.ReduceTaskAssignedWorkerId = req.workerId<br><br>		<span class="hljs-comment">// set reply</span><br>		rsp.replyTaskType = TASK_TYPE_REDUCE<br>		rsp.ReduceTaskInfo = reduceTask<br><br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>&amp;#8195;&amp;#8195;先简单说一下分发任务的逻辑。因为，map任务是产生中间数据集，而reduce任务的输入就是map产生的中间数据集。因此，在任务分发的时候，<strong>显然map任务有更高的优先级，尽量让map任务先做完。</strong></p>
+<p>&amp;#8195;&amp;#8195;以map的分发为例，<strong>需要分发的是INIT状态的任务，已经在计算和运行结束的任务不必再次分发。</strong>这里通过调用<code>m.getInitMapTaskForAssign()</code>获得一个**能够分发的任务(INIT)**。(如果找不到，说明map已经全部分发完毕，可以把reduce进行分发这个逻辑跟分发map类似）</p>
+<p>&amp;#8195;&amp;#8195;后面就是对该任务进行注册（修改状态，添加分发时间，以及分给哪个worker）。</p>
+<p>​    </p>
+<p>以上就是分发任务接口的实现逻辑，十分简单。下面想讨论，在做这个lab遇到的问题以及细节：</p>
+<p><strong>(1)数据的完整性以及分发的原子性</strong></p>
+<p>&amp;#8195;&amp;#8195;刚开始做这个lab的时候，我设计的master是用三个队列来存储taskInfo的。<strong>这种设计，可以马上在INIT状态的队列里面拿出一个任务进行处理。而如果用table的话，需要遍历整个表。</strong></p>
+<p>&amp;#8195;&amp;#8195;但是，这样三队列这种设计，其实它原子性是不高的。这种设计之下，它的分发其实是三个动作：(1)从INIT队列中拿出一个task (2)修改该task的信息 (3)把这个task插入到PROCESSING队列中</p>
+<p>&amp;#8195;&amp;#8195;这三个都是独立的操作，即使定期给Master做一个快照，但还是会有数据丢失的情况发生。比如说以下这种场景：</p>
+<ul>
+<li>从INIT队列中取出一个task</li>
+<li>系统进行快照备份</li>
+<li>备份完之后发生了crash</li>
+</ul>
+<p>&amp;#8195;&amp;#8195;那么，在这种场景下，从INIT拿出来的这个task就会消失了。<strong>因为，发生持久化的时候，该task并不在这三个队列中，持久化的时候并不能把该task写入到硬盘中去。</strong>如果没有发生crash则没关系，若是在这个时候发生crash了，这个task是仅仅存在于内存里面的，因此会导致数据丢失。（除非持久化的时候，不仅存储那三个队列，还把内存中的数据一并持久化。但是真要这要做，开销是十分巨大的）</p>
+<p>&amp;#8195;&amp;#8195;正是因为这个原因，我选择了把所有task存储在一个table里面，这样就避免了这种弱原子性的问题。<strong>并且考虑到，在table里面拿到一个可以分发的task的平均复杂度不会太高，因此这种方案还是能够接受的。</strong></p>
+<p><strong>(2)处理逻辑和发送回复的顺序问题</strong></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-comment">// 1. change the info of map task</span><br>mapTask.MapTaskState = MAP_TASK_STATE_RUN<br>mapTask.MapTaskStartTimeStamp = <span class="hljs-keyword">uint64</span>(time.Now().Unix())<br>mapTask.MapTaskAssignedWorkerId = req.workerId<br><br><span class="hljs-comment">// 2. set reply</span><br>rsp.mapTaskInfo = mapTask<br>rsp.replyTaskType = TASK_TYPE_MAP<br><br></code></pre></td></tr></table></figure>
+
+<p>&amp;#8195;&amp;#8195;简单来说其实就是<strong>先处理注册逻辑还是先发送回复的问题</strong>。在这个lab中其实不会遇到这个问题，因为太久没用过rpc了，当时以为只要设置了rsp就会把回复发送给调用者。实际上，会等到这个接口调用结束之后，rpc框架才会对rsp进行序列化并通过网络进行传输。</p>
+<p>&amp;#8195;&amp;#8195;虽然，这个问题在该lab中没有体现，但是还是有不少参考意义（比如在MQ中这应该会经常碰到）。</p>
+<p>&amp;#8195;&amp;#8195;对于这个问题，有两种方案，下面来分析一下它们的优劣势：</p>
+<p><strong>1.先发送rsp，再处理metadata（又或者是业务逻辑）</strong></p>
+<p>&amp;#8195;&amp;#8195;当时做这个的时候，主要考虑的问题是。<strong>当我发送完这个回复请求之后，还没到业务逻辑的处理，这时系统发生宕机了</strong>，我该怎么进行处理？</p>
+<p>&amp;#8195;&amp;#8195;如果发送rsp之后发生宕机了，假设网络没有任何问题，worker就会收到该请求，然后开始处理这个计算任务，从这个角度来看worker认为master已经把任务分发给他了。</p>
+<p>&amp;#8195;&amp;#8195;但是从master的角度来说，<strong>它虽然已经发送了请求，但是metadata还没来得及修改，然而master作出的决策也基本是依靠metadata。因此从这个角度master不认为已经把任务分发了</strong>，在master的metadata中，该任务仍就是处于INIT状态。</p>
+<p>&amp;#8195;&amp;#8195;正是因为上述原因，需要额外的机制来处理这种错误。此时，metadata没有修改，但是worker已经收到分发的任务了，并开始处理。<strong>处理完成后，会调用<code>task_finish</code>接口让master处理</strong>。但这时候，master就会很困惑了，<strong>因为该任务是INIT又被分发到别的worker上</strong>。</p>
+<p>&amp;#8195;&amp;#8195;其实，这个处理也不难，<strong>只要回复的workerId 与 master记录的把该task分发到哪个workerId上，这两个对不上，master就不进行处理就好了。</strong>不要弄太复杂的逻辑。</p>
+<p><strong>2.先处理metadata，再发送请求</strong></p>
+<p>&amp;#8195;&amp;#8195;跟上面的问题类似，在这种场景下，从master的角度来看，确实是把任务分发了，因为metadata已经被修改了。但是从worker的角度来看，它没有收到分发的任务。</p>
+<p>&amp;#8195;&amp;#8195;这种的处理策略也很简单，我们只需要等超时处理，自动把该任务回收就好了。</p>
+<p>&amp;#8195;&amp;#8195;<strong>经过综合考虑之后，我决定选择第二种策略去做该lab。</strong></p>
+<h3 id="任务结束"><a href="#任务结束" class="headerlink" title="任务结束"></a>任务结束</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(m *Master)</span> <span class="hljs-title">finishTaskHandler</span><span class="hljs-params">(req *DoneTaskReq,rsp *DoneTaskRsp)</span> <span class="hljs-title">error</span></span> &#123;<br><br>	mutexLock.Lock()<br>	<span class="hljs-keyword">defer</span> mutexLock.Unlock()<br><br>	<span class="hljs-comment">// get the task</span><br>	<span class="hljs-keyword">if</span> req.taskType == TASK_TYPE_MAP &#123;<br>		m.finishMapTask(req)<br>	&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> req.taskType == TASK_TYPE_REDUCE &#123;<br>		m.finishReduceTask(req)<br>	&#125;<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(m *Master)</span> <span class="hljs-title">finishMapTask</span><span class="hljs-params">(req *DoneTaskReq)</span></span>&#123;<br><br>	<span class="hljs-comment">// get the task</span><br>	taskInfo := m.tableMapTask[req.taskSeq]<br><br>	<span class="hljs-keyword">if</span> checkMapTaskCanSetFinish(req.workerId, <span class="hljs-keyword">uint64</span>(time.Now().Unix()),taskInfo)&#123;<br>		<span class="hljs-comment">// set the task finish</span><br>		m.intermediateHandler(req.outputFilePath)<br>		taskInfo.MapTaskState = MAP_TASK_STATE_FINISH<br>	&#125;<span class="hljs-keyword">else</span>&#123;<br>		<span class="hljs-comment">// if the worker id or the task timeout,don&#x27;t do anything just let the timeout handler to solve the problem</span><br>		<span class="hljs-comment">// it can simplfy the design</span><br>	&#125;<br><br>	<span class="hljs-keyword">return</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(m *Master)</span> <span class="hljs-title">finishReduceTask</span><span class="hljs-params">(req *DoneTaskReq)</span></span> &#123;<br><br>	<span class="hljs-comment">// get the task</span><br>	reduceTaskInfo := m.tableReduceTask[req.taskSeq]<br><br>	<span class="hljs-keyword">if</span> checkReduceTaskCanSetFinish(req.workerId,<span class="hljs-keyword">uint64</span>(time.Now().Unix()),reduceTaskInfo) &#123;<br>		reduceTaskInfo.OutputFilePathLocation = req.outputFilePath[<span class="hljs-number">0</span>]<br>		reduceTaskInfo.ReduceTaskState = REDUCE_TASK_STATE_FINISH<br>	&#125;<br><br>	<span class="hljs-comment">// let the timeout handler the solute this situation</span><br><br>	<span class="hljs-keyword">return</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>&amp;#8195;&amp;#8195;当worker处理完任务之后，就会回调该函数，然后让master进行metadata的处理。因为worker能处理map_task和reduce_task，因此在回调的之后，需要指明当前worker是处理的哪个task。</p>
+<p>&amp;#8195;&amp;#8195;同时，需要知道的是，有超时机制的存在，导致master有可能把任务再次分发给到了另一个worker。因此，master在处理任务结束的回调，最主要的是处理metadata的信息是否准确。<strong>当时有想过，在校验worker信息的时候，同时也检测超时。但是，后来还是觉得应该遵从单一原则，不应该把事情弄得过于复杂。并且，如果在处理结束任务时，实际上该任务已经超时了，但是超时任务还没来得及启动处理。我想，最终是否是超时应该交给超时机制去处理。</strong></p>
+<h3 id="任务监控-timeout"><a href="#任务监控-timeout" class="headerlink" title="任务监控(timeout)"></a>任务监控(timeout)</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *Master)</span> <span class="hljs-title">MapCheckingHandler</span><span class="hljs-params">()</span></span>&#123;<br><br>	<span class="hljs-keyword">for</span>&#123;<br>		mutexLock.Lock()<br>		<span class="hljs-keyword">defer</span> mutexLock.Unlock()<br>		nowTimeStamp := <span class="hljs-keyword">uint64</span>(time.Now().Unix())<br>		<span class="hljs-keyword">for</span> _,mapTaskInfo := <span class="hljs-keyword">range</span> m.tableMapTask &#123;<br>			<span class="hljs-keyword">if</span> mapTaskInfo.MapTaskState == MAP_TASK_STATE_RUN &amp;&amp;<br>				checkTaskTimeout(nowTimeStamp,mapTaskInfo.MapTaskStartTimeStamp) &#123;<br><br>				<span class="hljs-comment">// eraser map-register info</span><br>				mapTaskInfo.MapTaskState = MAP_TASK_STATE_INIT<br>				mapTaskInfo.MapTaskAssignedWorkerId = NO_WORKER_ID<br>				mapTaskInfo.MapTaskStartTimeStamp = <span class="hljs-number">0</span><br>			&#125;<br>		&#125;<br>		mutexLock.Unlock()<br>		<span class="hljs-comment">// sleep 15 sec</span><br>		time.Sleep(<span class="hljs-number">100</span>*time.Millisecond*<span class="hljs-number">2</span>)<br>	&#125;<br>  <br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *Master)</span> <span class="hljs-title">ReduceCheckingHandler</span><span class="hljs-params">()</span></span>&#123;<br><br>	<span class="hljs-keyword">for</span>&#123;<br>		mutexLock.Lock()<br>		<span class="hljs-keyword">defer</span> mutexLock.Unlock()<br>		nowTimestamp := <span class="hljs-keyword">uint64</span>(time.Now().Unix())<br>		<span class="hljs-keyword">for</span> _,reduceTask := <span class="hljs-keyword">range</span> m.tableReduceTask&#123;<br>			<span class="hljs-keyword">if</span> reduceTask.ReduceTaskState == REDUCE_TASK_STATE_RUN &amp;&amp;<br>				checkTaskTimeout(nowTimestamp,reduceTask.ReduceTaskStartTimeStamp)&#123;<br>				<span class="hljs-comment">// eraser reduce task register info</span><br>				reduceTask.ReduceTaskState = REDUCE_TASK_STATE_INIT<br>				reduceTask.ReduceTaskAssignedWorkerId = NO_WORKER_ID<br>				reduceTask.ReduceTaskStartTimeStamp = <span class="hljs-number">0</span><br><br>			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> reduceTask.ReduceTaskState == REDUCE_TASK_STATE_BLOCK &amp;&amp;<br>				checkReduceTaskCanSetInit(reduceTask)&#123;<br>				<span class="hljs-comment">// 检查是否能够把某个reduce-task set init</span><br>				reduceTask.ReduceTaskState = REDUCE_TASK_STATE_INIT<br>			&#125;<br>		&#125;<br>		mutexLock.Unlock()<br>		time.Sleep(<span class="hljs-number">100</span>*time.Millisecond*<span class="hljs-number">2</span>)<br>	&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>&amp;#8195;&amp;#8195;对于管理metadata的节点来说，我觉得监控是十分重要的一个机制。<strong>感觉很多容错的措施都是建立在监控的基础上的</strong>，比如说运行在某个worker上面的任务，因为宕机等原因，造成该任务没有办法完成。如果没有额外的机制去处理的话，master将会永远等待这个“无法完成”的任务，这显然不合理。</p>
+<p>&amp;#8195;&amp;#8195;因此，需要引入一个机制来帮助master筛选那些已经“坏掉的任务”。在这个lab中，我通过超时处理来达成这个目的。<strong>一般情况下，worker都能在规定时间内完成分发给它的任务，因为分发下去的任务都是一些子任务，并不会有很大的数据量，除非一些不可抗的因素（网络IO慢，worker负载高，宕机）发生，才会导致任务的超时。</strong></p>
+<p>&amp;#8195;&amp;#8195;当一个任务被分发下去的时候，<strong>master便会记录该任务分发的时间，以及分发给哪个worker。</strong>一开始设计的时候，我仅仅是记录分发的时间，没有记录分发给哪个worker。</p>
+<p>&amp;#8195;&amp;#8195;后面验证的时候发现了逻辑漏洞，如果不记录worker的话，当一个任务超时，master会把该任务重新设置为可分发状态。当旧的worker完成任务后，调用<code>task_finish</code>接口的时候，如果此时任务处于INIT状态，master显然能够这道此时的处理的<code>task_finish</code>是超时的任务。但是，如果master把这个超时的任务，重新分发给到了别的worker，那么master旧很难区分到底是谁调用了<code>task_finish</code>。<strong>因此，我加了一个workerId方便master进行校验。</strong></p>
+<p>&amp;#8195;&amp;#8195;把这些该保存的信息，都记录下之后，便开启开启一个协程去处理超时。该协程是一个endless loop，并且在每个周期内都会检查所有</p>
+<p>metadata，如果某个任务超时，便将它重新设置为初始化状态。这样即使，master收到已经超时的任务，它也有能力进行处理（一般直接忽略即可）。</p>
+<p>&amp;#8195;&amp;#8195;虽然这种机制，能够处理上述的问题，但是也不是那么的完美。最大的问题就是，这个超时时间很难去给出一个很好的界定，首先网络本身就是不可靠的（除非，master和worker都在一个机房内，有专线进行沟通，但这地域容错性不高），还有worker也不是只处理一个任务可能还运行别的任务…..因此，如果把超时时间设置得太小，那么很容易发生超时；如果设置太大，那么超时机制的作用就会降低。</p>
+<p>&amp;#8195;&amp;#8195;但是，我个人是比较喜欢设置稍大的超时时间的，主要有以下的考虑：</p>
+<ul>
+<li>超时显然是小概率的事件，因此设置稍大的超时时间也未尝不可，只需要在一定的时间内把该任务发现了就行</li>
+<li>worker应该要有重试机制，一个任务在某个worker上彻底无法重做的概率也是很小的，如果是这种情况确实应该重新分发。但是如果是别的情况，显然让worker进行重做该任务，显然比master重新分发该任务让别的worker执行效率要高。</li>
+</ul>
+<h3 id="Done"><a href="#Done" class="headerlink" title="Done"></a>Done</h3><p>&amp;#8195;&amp;#8195;这个就不细说了，就是master定时检查，是否所有任务都已经完成，回复给调用的client。</p>
+<h2 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h2><p>&amp;#8195;&amp;#8195;这个lab虽然不太难，但是做完之后收获还是不小。最大的一个感受就是，<strong>像这种依靠一个master进行分发的模型，如果能够维护好metadata的话，很多问题都能避免。</strong></p>
+<p>&amp;#8195;&amp;#8195;还有就是，目前做的这个lab，因为时间关系很多方面都比较粗糙，比如说控制并发方面，我用了一个互斥锁就把所有metadata都锁起来。这样的操作导致该demo并发度并不会太高。优化的方案也想过，就是把互斥锁换成读写锁机制，还有学习concurrent_hashMap，在表中加分段加锁，这样就不会一次锁起整个表。</p>
+<p>&amp;#8195;&amp;#8195;还有就是，一些持久化操作也做，比如可以定时把master的metadata都持久化到磁盘，这样能够提高系统的容错性…</p>
+<p>​    </p>
+<p>&amp;#8195;&amp;#8195;ok，就到这里吧，社畜还要接着上班…</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E8%AE%BA%E6%96%87/">论文</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/19/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/consistency-model-of-db-and-cache/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">如何保证缓存和数据库双写一致</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/11/25/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/message-queue-part-2/">
+                        <span class="hidden-mobile">消息队列学习笔记 - 2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

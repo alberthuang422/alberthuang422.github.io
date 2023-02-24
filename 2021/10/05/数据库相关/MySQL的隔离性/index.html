@@ -1,0 +1,639 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文主要讲解数据库的隔离性，以及原理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库的隔离性">
+<meta property="og:url" content="http://example.com/2021/10/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/index.html">
+<meta property="og:site_name" content="黄成彬的博客">
+<meta property="og:description" content="本文主要讲解数据库的隔离性，以及原理">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
+<meta property="article:published_time" content="2021-10-05T14:46:24.000Z">
+<meta property="article:modified_time" content="2023-02-18T15:53:07.028Z">
+<meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
+  
+  
+  <title>数据库的隔离性 - 黄成彬的博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/cat.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="数据库的隔离性">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-05 22:46" pubdate>
+        2021年10月5日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      4.7k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      40 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">数据库的隔离性</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>​    大多数数据库都是支持多个客户端同时访问。如果读取得是不同得数据，那肯定没有什么问题；但如果访问相同得记录，就可能遇到并发问题。<br>​<br>​    而且，网上大部分的文章都是谈论 “读-写并发“带来的问题，但”写-写并发“讨论的很少。再进一步说，对于<strong>幻读</strong>，解决的办法一般也是指可串行化，但是2PC的可串行化会让数据库的效率很低很低。<br>​<br>​    因此，下面想谈谈数据库的隔离性。</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633436392828.png" srcset="/img/loading.gif" lazyload alt="1633436392828"></p>
+<!--more-->
+
+<h2 id="读-提交"><a href="#读-提交" class="headerlink" title="读-提交"></a>读-提交</h2><p>&amp;#8195;&amp;#8195;读-提交是最基本的事务隔离级别，它只是提供以下两个保证。</p>
+<ul>
+<li>读数据时，只能看到已经成功提交的数据  <strong>(防止脏读)</strong></li>
+<li>写数据时，不会覆盖已经已经提交成功的数据 <strong>(防止脏写)</strong></li>
+</ul>
+<p><strong>防止脏写 写写并发</strong></p>
+<p>&amp;#8195;&amp;#8195;如果两个事务同时尝试更新相同的对象，会发生什么情况呢？我们不清楚写入的顺序，但可以想象后写的操作，会覆盖较早写入的操作。</p>
+<table>
+<thead>
+<tr>
+<th align="center">Session A</th>
+<th align="center">Session B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">begin</td>
+<td align="center">begin</td>
+</tr>
+<tr>
+<td align="center">update data &#x3D; 123</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">update data &#x3D; 456</td>
+</tr>
+<tr>
+<td align="center">commit</td>
+<td align="center">commit</td>
+</tr>
+</tbody></table>
+<p>&amp;#8195;&amp;#8195;很显然，如果不做什么特殊的处理，那么seesionB的写入会覆盖A的写入。</p>
+<p><strong>如果A在提交前，需要查询一次data，然后交付应用层进行处理的话，很显然就会出现逻辑上的错误。</strong></p>
+<p><strong>防止脏写能避免这些问题</strong></p>
+<ul>
+<li>当一个记录，被两个事务同时写入的时候。能够避免 旧的写入被覆盖掉</li>
+</ul>
+<h3 id="如何实现读提交？"><a href="#如何实现读提交？" class="headerlink" title="如何实现读提交？"></a>如何实现读提交？</h3><p>数据库通常<strong>使用行锁来防止脏写</strong>：</p>
+<ul>
+<li>当事务想修改某个对象时，需要获得这个对象的写锁</li>
+<li>然后一直持有该锁，知道事务被提交</li>
+<li>另一个事务想获得锁，如果失败，则会被阻塞</li>
+</ul>
+<p>那数据库如何<strong>防止脏读</strong>：</p>
+<ul>
+<li>当事务想要读取某个对象时，那就给对象加一个读锁</li>
+<li>如果此时有事务想要修改，那就要加写锁，但是读锁，写锁互斥。所以写锁加不上去</li>
+<li>同理，如果某个对象有写锁，那么读锁也加不上去。</li>
+</ul>
+<h2 id="MVCC-和-可重复读"><a href="#MVCC-和-可重复读" class="headerlink" title="MVCC 和 可重复读"></a>MVCC 和 可重复读</h2><p>&amp;#8195;&amp;#8195;表面上，读-提交这个隔离级别，可能会认为它已经满足了事务所需要的一切特征。但是，还是字面意思，如果一个事务的过程中，如果两次查询不一样，那么肯定是不行的。</p>
+<p>我们看一个例子</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633437092102.png" srcset="/img/loading.gif" lazyload alt="1633437092102"></p>
+<p>&amp;#8195;&amp;#8195;两次，查询不一样，显然不行的。我们，其实更想要的是，在事务开启，到事务的提交。在这段时间里，我们对同一个对象的查询结果是 <strong>一致的，自洽的</strong></p>
+<p>&amp;#8195;&amp;#8195;快照级别是解决上面问题最常见的手段。其总体想法是，每个事务都从数据库的一致性快照中读取。然后，每次查询，都从这个一致性快照里面进行查询。因此，在这个事务的生存期间，读到数据，都是自洽的。</p>
+<h3 id="如何实现MVCC"><a href="#如何实现MVCC" class="headerlink" title="如何实现MVCC"></a>如何实现MVCC</h3><p>&amp;#8195;&amp;#8195;在事务启动的时候，就会”拍一个快照”。<strong>这个快照是基于整个库的。</strong>我们看一下，这个快照是怎么执行的。</p>
+<p>&amp;#8195;&amp;#8195;InnoDB引擎中，开启一个事务的时候，会分配一个 transaction ID，这个是完全严格递增的。</p>
+<p>&amp;#8195;&amp;#8195;然后，每个数据都有很多个版本。当一个事务对某个对象进行更新时，会生成一条记录，大致是<code>transaction id | 对象的值 | 上一条记录的位置</code></p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633438091862.png" srcset="/img/loading.gif" lazyload alt="1633438091862"></p>
+<p>​    上图，是一个对象的若干个版本。 <strong>分别由事务id是10，15，17，25来更新的。</strong></p>
+<p>​    当一个事务启动时，会产生一个快照，这个快照其实是一个数组。里面的内容都是<strong>在当前事务启动时，所有还没提交的事务id。</strong> </p>
+<p>​    so,read - view &#x3D; [ 事务id1(低水位)，事务id2….事务idN(一般是当前事务)(高水位)]</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633438516538.png" srcset="/img/loading.gif" lazyload alt="1633438516538"></p>
+<p>​    那么，我们就分情况来讨论一下可见性。当我们遍历，对象的版本链时，可以根据它的版本ID进行可见判断，分为以下几种情况</p>
+<ul>
+<li>版本ID &lt; 低水位<ul>
+<li>表明，这个版本，在事务启动之前就已经提交了，因此当前事务是能看见的</li>
+</ul>
+</li>
+<li>版本ID &gt; 高水位<ul>
+<li>说明，这个版本，是事务启动之后才提交的，当前事务是无法看见这个版本</li>
+</ul>
+</li>
+<li>版本ID 在两个水位之间<ul>
+<li>如果版本ID，不在事务的Read-View中，显然还是能看见的。<strong>因为Read-View记录的是，事务启动时，仍然没被提交的事务ID。所以，如果版本ID不在Read-View中，那么这个版本必然是被提交的</strong></li>
+<li>如果版本ID，在Read-View中，显然，是不可见的。</li>
+</ul>
+</li>
+</ul>
+<h3 id="当前读"><a href="#当前读" class="headerlink" title="当前读"></a>当前读</h3><p>​    如果事务启动之后，执行update操作，那么一般来说是在最新的版本上面更新的。</p>
+<h2 id="防止更新丢失"><a href="#防止更新丢失" class="headerlink" title="防止更新丢失"></a>防止更新丢失</h2><p>​    当目前为止，所讨论的<strong>读-提交</strong>和<strong>Read-View</strong>，都是只解读事务遇到并发时可以看到什么**(读-写并发)。**</p>
+<p>​    总体来说，还没有真正解决两个写事务之间的并发。</p>
+<p>​    当两个事务在同样的数据对象执行类似操作，由于隔离性，后写的操作，不知道前写的事务做了什么东西。因此，会导致第一次写的记录，会丢失。例如：</p>
+<ul>
+<li>两个用户同时编辑一个wiki页面，so，必然后保存的人，会覆盖前写的内容。</li>
+</ul>
+<h3 id="CAS自动检测冲突"><a href="#CAS自动检测冲突" class="headerlink" title="CAS自动检测冲突"></a>CAS自动检测冲突</h3><p>​    如果两个事务并发写同一个对象。可以借鉴CAS的思想来进行检测冲突。</p>
+<p>​    每次update的时候做一次 Compare and Set操作，如果CAS成功则提交该事务。如果CAS失败，则放弃并终止这个事务。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><pre><code class="hljs mysql">-- 原子并发<br>update table set field = &#x27;new content&#x27;<br>where id = &#x27;111&#x27; and field = &#x27;old content&#x27;;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="多数据副本的写并发"><a href="#多数据副本的写并发" class="headerlink" title="多数据副本的写并发"></a>多数据副本的写并发</h3><p>​    参考，多数据重新的数据同步，采用lamport时间戳，来进行同步。</p>
+<p><strong>其他加锁的操作，防止写并发较为常见，不展开了</strong></p>
+<h2 id="幻读和可串行化"><a href="#幻读和可串行化" class="headerlink" title="幻读和可串行化"></a>幻读和可串行化</h2><p>​    下面来讲讲幻读。首先想到一个这样的场景，某个医院的调班制度是这样的:如果当前值班的人数大于2，那么就可以调班。如果事务是按照，下面的顺序进行执行的话，就会出现错误。</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633441183758.png" srcset="/img/loading.gif" lazyload alt="1633441183758"></p>
+<p>​    在他们开启查询时，都发现值班人数是大于2的。应用层，逻辑处理之后，发现可以调班。因此执行调班操作，但是执行完毕之后，值班人数为0。</p>
+<p>​    这种问题，快照隔离是处理不了的。因为两个事务开启时，创建的快照在整个事务的生存期间，是自洽的。因此，都会看到2。</p>
+<p>​    更多的幻读，写倾斜例子：</p>
+<ul>
+<li>会议室预定系统</li>
+<li>超卖问题</li>
+<li>棋盘问题，对于每个棋子我们可以加锁，但是我们想要避免落到同一个地方则比较困难。因为两个移动棋子的事务并发启动的时候，每个Read-View，都看到”同一个地方“是空的，因此都向往那里移动。</li>
+<li>创建用户名问题，原理同上</li>
+</ul>
+<p>​    <strong>这种问题，称为幻读问题，而且这些问题一般符合下面这些特点：</strong></p>
+<ul>
+<li>Step1：根据某个条件，查询出一些记录 （结果可以是空）</li>
+<li>Step2：查询记录交付给应用层进行逻辑判断</li>
+<li>Step3：应用层决策交给DB进行处理，<strong>增删查改</strong><ul>
+<li>这个操作，会影响先前select的结果。</li>
+</ul>
+</li>
+<li>只要符合上述这些条件，都很容易引起幻读的问题。</li>
+</ul>
+<h3 id="如何解决写倾斜or幻读问题"><a href="#如何解决写倾斜or幻读问题" class="headerlink" title="如何解决写倾斜or幻读问题"></a>如何解决写倾斜or幻读问题</h3><p>对于避免写倾斜，其实有很多方案。</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown">1.可串行化，避免写倾斜。<br><span class="hljs-bullet"> -</span> 采用2PC，当一个事务提交/中止的时候，才把锁给释放。<br><span class="hljs-bullet"> -</span> 但是这种操作，效率很低<br><br>2.版本向量的办法，(maybe，我也不是很确定这个行不行)<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="可串行化"><a href="#可串行化" class="headerlink" title="可串行化"></a>可串行化</h3><p>​    可串行化是最强的隔离级别，它在一定程度上保证事务的并发，让最后的结果看起来一次只有一个事务进行执行。一般来说，实现可串行化有下面三种方案</p>
+<ul>
+<li>严格串行执行</li>
+<li>2PC</li>
+<li>可串行化的快照隔离</li>
+</ul>
+<p>​    下面，我将简单介绍一下 串行执行 和2PC。详细讲讲可串行化的快照，因为这是一个比较新的算法，如果没有意外的话，以后数据库实现可串行化都会采用这个算法，因为效率大大提高了。</p>
+<h3 id="串行执行—单线程"><a href="#串行执行—单线程" class="headerlink" title="串行执行—单线程"></a>串行执行—单线程</h3><p>​    解决并发的根本手段就是避免并发：就是每次只有一个线程在CPU执行。完全回避了并发会遇到的各种隔离性问题，数据共享问题。</p>
+<p>​    但是直到最近，数据库设计者才真正考虑用单线程实现串行的隔离 (比如说redis)。</p>
+<p>​    我觉得原因可能有两种：</p>
+<ul>
+<li>硬件提升很快，现在内存，CPU提升比较大。内存能够一次性容纳很多数据，因此避免了磁盘IO的损耗</li>
+<li>单线程，避免了频繁的上下文切换</li>
+</ul>
+<p><strong>综上，单线程模型，效率还能接受，但不到万不得已，不建议用</strong></p>
+<h3 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h3><p>​    就是对事务操作的对象加锁，区间锁之类的。然后到最后提交才释放。</p>
+<p>​    因为加锁了导致效率很低，很多事务被阻塞住了。</p>
+<p>​    下篇文章再仔细讲讲区间锁，这里先不讲了。</p>
+<h3 id="可串行快照"><a href="#可串行快照" class="headerlink" title="可串行快照"></a>可串行快照</h3><p>​    虽然<strong>两阶段锁可以保证串行化</strong>，但是性能差强人意并且无法拓展。有句话说，你隔离得越严实，性能就会越差。那么性能和隔离性之间是否无法兼得？</p>
+<p>​    未必，最近出现了一种叫做**可串行化快照(Serializable Snapshot Isolation)**的技术。它提供完整性的隔离保证，并且性能损耗较小。</p>
+<p>​    但是，SSI仍旧需要在实践中检验它的性能，相信以后会称为未来数据库的标配。</p>
+<p><strong>乐观和悲观</strong></p>
+<p>​    2PC显然是一种悲观的思想，它基于这样的设计思想：<strong>如果某些操作能引起并发错误，那么干脆就直接放弃，等到安全的时候再让该事务进行</strong></p>
+<p>​    相比之下，可串行化快照是一种乐观的思想：</p>
+<ul>
+<li>事务不管怎么样都会执行，都是在执行的过程中会记录一些信息，帮助自己判断。</li>
+<li>等到事务将要提交的时候，数据库底层会判断是否出现冲突(根据记录的信息)，如果发生冲突的话，事务重试</li>
+</ul>
+<p>​    但是，这个有一个前提，就是<strong>事务之间竞争不是很大</strong>。如果竞争很大的话，这种算法最终会退化成2PC的效率。</p>
+<h2 id="可穿行快照具体实现"><a href="#可穿行快照具体实现" class="headerlink" title="可穿行快照具体实现"></a>可穿行快照具体实现</h2><p>​    顾名思义，可串行化快照是基于快照的。也就是说，数据库的所有操作都是基于事务中的一致性快照。<strong>在这个的基础上，增加了相关算法来检测，写入之间的串行化冲突</strong>。</p>
+<h3 id="基于过期时间来确定的"><a href="#基于过期时间来确定的" class="headerlink" title="基于过期时间来确定的"></a>基于过期时间来确定的</h3><p>​    在讨论<strong>写倾斜</strong>的时候，讨论过写倾斜有三个特点。(1)根据条件查询 (2)应用层逻辑判断 (3)进入db修改，这个修改对先前的查询有影响。</p>
+<p>​    因此，当前事务在快照隔离的情况下，数据可能在查询期间，就被其他事务修改。<strong>因此当前的接下来决策信息，会被干扰了。</strong></p>
+<p>​    所以，要避免写倾斜产生。关键在于要让数据库检测，<strong>当前事务对某个对象的修改是否会对别的事务对该对象的查询有影响。</strong></p>
+<p>大致可以分为两种情况来讨论：</p>
+<ul>
+<li><p>查询是否作用于一个即将过期的MVCC对象 (当前事务在读取对象之前，该对象已经有别的事务未提交的写入，该对象对当前事务不可见)</p>
+</li>
+<li><p>检查写入是否会影响之前的读取  (可能会影响应用层的逻辑判断)</p>
+</li>
+</ul>
+<h3 id="写入-未提交-读取"><a href="#写入-未提交-读取" class="headerlink" title="写入(未提交) - 读取"></a>写入(未提交) - 读取</h3><p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633451169315.png" srcset="/img/loading.gif" lazyload alt="1633451169315"></p>
+<p>​    上面这个例子，如果是基于MVCC的隔离下。事务43的提交是晚于事务42的提交的。那么也就是说，事务42是可以提交成功的，那么就会改变 值班人数 &gt;&#x3D; 2这个条件。虽然事务43的Read - View里面，仍旧是2个人值班(虽然实际上前提条件已经变了)。</p>
+<p>​    这样，数据库要跟踪那些因为MVCC可见性问题带来的<strong>被忽略的写操作</strong>。</p>
+<p><strong>如何解决这个问题？</strong></p>
+<ul>
+<li>对符合前提条件的记录，建立一张表。</li>
+<li>对这些查询出来记录，进行修改的时候，插入一条记录 [record | <strong>create_transaction id</strong> | delete transaction id]</li>
+<li>等到事务提交的时候，检查一下该表。<ul>
+<li>如果这个更新不是自己做的，那么就中止本次事务的提交(因为前提条件被别的事务破坏了)</li>
+<li>如果是自己的transaction id，那么就提交</li>
+</ul>
+</li>
+</ul>
+<h3 id="更新是否影响之前的读"><a href="#更新是否影响之前的读" class="headerlink" title="更新是否影响之前的读"></a>更新是否影响之前的读</h3><p><img src="/../../images/%E6%B5%85%E8%B0%88MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/1633451743812.png" srcset="/img/loading.gif" lazyload alt="1633451743812"></p>
+<p><strong>具体实现</strong></p>
+<ul>
+<li>维护一张读表</li>
+<li>更新的时候，看看读表中是否有数据。如果有则通知对应的事务，让其在提交时放弃并重试。</li>
+</ul>
+<p>​    在上面这个例子中时这样的。两个事务42，43对db进行查询。因此读表插入两条记录，记录了两个事务分别读取了什么记录。</p>
+<p>​    当事务42对<code>record 1234</code>进行更新后，在读表中查到<code>record 1234</code>的更新会影响到事务43。那么就通知到事务43，并且让他提交时放弃并重试。</p>
+<p>​    <strong>ok，以上就是本章想要探讨的全部内容。如果想要交流讨论的，欢迎邮箱联系~</strong></p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/MySQL/">MySQL</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/06/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/database-lock/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">浅谈数据库的锁(二)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/10/04/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9B%B8%E5%85%B3/%E7%BB%93%E5%90%88%E5%86%85%E6%A0%B8%E6%80%81%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%BB%93%E6%9E%84%E8%B0%88%E8%B0%88-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E6%AF%94%E8%BF%9B%E7%A8%8B%E5%BF%AB/">
+                        <span class="hidden-mobile">结合内核态和线程结构谈谈 --- 为什么线程切换比进程快?</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

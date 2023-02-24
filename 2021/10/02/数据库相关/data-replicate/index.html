@@ -1,0 +1,613 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文讨论了数据复制的目的，主从复制的工作原理，同步复制与异步复制，以及主从复制的取舍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈数据复制">
+<meta property="og:url" content="http://example.com/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/data-replicate/index.html">
+<meta property="og:site_name" content="黄成彬的博客">
+<meta property="og:description" content="本文讨论了数据复制的目的，主从复制的工作原理，同步复制与异步复制，以及主从复制的取舍。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/database.jpeg">
+<meta property="article:published_time" content="2021-10-02T14:07:16.000Z">
+<meta property="article:modified_time" content="2023-02-18T15:53:07.028Z">
+<meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/database.jpeg">
+  
+  
+  <title>浅谈数据复制 - 黄成彬的博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/cat.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="浅谈数据复制">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-10-02 22:07" pubdate>
+        2021年10月2日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.3k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      28 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">浅谈数据复制</h1>
+            
+            <div class="markdown-body">
+              <h2 id="数据复制"><a href="#数据复制" class="headerlink" title="数据复制"></a>数据复制</h2><h3 id="数据复制的目的"><a href="#数据复制的目的" class="headerlink" title="数据复制的目的"></a>数据复制的目的</h3><ul>
+<li>使数据中心更加接近客户端的物理位置，降低访问延迟 <strong>(提高效率)</strong></li>
+<li>当部分组件发生故障时，会自动切换到别的组件**(高可用性)**</li>
+<li>拓展至多台机器以同时提供吞吐率</li>
+</ul>
+<p>​    <strong>数据复制的所有技术挑战都是复制那些热点数据，如何把热点数据复制到别的节点上面</strong>。</p>
+<!--more-->
+
+<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><h4 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h4><p>​    对于每一个记录的写入，所有副本都需要更新；否则，某些节点会出现数据不一致的情况。</p>
+<p>​    主从复制的工作原理如下:</p>
+<ul>
+<li>指定其中一个节点成为master，其他节点为slave</li>
+<li>所有写请求，转发给到master。slave则处理读请求。</li>
+<li>当master做好本地存储之后，把这些操作通过binlog，发送给slave。然后让slave执行。</li>
+</ul>
+<hr>
+<h4 id="同步复制-与-异步复制"><a href="#同步复制-与-异步复制" class="headerlink" title="同步复制 与 异步复制"></a>同步复制 与 异步复制</h4><p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183736639.png" srcset="/img/loading.gif" lazyload alt="1633183736639"></p>
+<p>​    如图，master和从节点1之间的复制是同步的，即主节点需要等待从节点1的复制完成写入。</p>
+<p>​    master和从节点2之间的复制时异步的，master发起一个复制后，不用阻塞等待，便直接提交了。等从节点2完成后，才真的向主节点发起一个确认。</p>
+<p><strong>同步复制的特点</strong></p>
+<ul>
+<li>主从节点之间数据的距离一定是很低的，因此如果发生切换的时候，可以在从节点查询到最新的数据</li>
+<li>如果从节点无法回复确认(或者确认丢失)，那么master会一直阻塞等待。并且会影响后面的操作。</li>
+</ul>
+<p><strong>异步复制的特点</strong></p>
+<ul>
+<li>最大的特点就是效率非常高，这里的效率不是指复制很快。是指不用阻塞，发起复制之后不用等待确认回复，直接可以用了。</li>
+<li>没有保证多久能复制完成，这会造成主从之间的距离比较大</li>
+</ul>
+<p><strong>实际上主从的取舍</strong></p>
+<p>​    在实际dba环境中，如果一个复制让所有节点完成后才能接受请求，这不太现实(因为距离可能很远，数据量很大，节点很多，网络原因等…)</p>
+<p>​    因此，一般来说通过同步异步混合的<strong>半同步办法</strong>。这种办法可以保证至少有两个节点拥有最新的数据(恢复的时候比较好)。并且不会阻塞很长时间</p>
+<ul>
+<li>把其中一到两个节点设置为同步复制</li>
+<li>其他节点设置为异步复制</li>
+</ul>
+<hr>
+<h4 id="配置新的从节点"><a href="#配置新的从节点" class="headerlink" title="配置新的从节点"></a>配置新的从节点</h4><p>​    当一个空白的节点要作为slave加入集群中时，一般按照如下操作步骤</p>
+<ul>
+<li>把该节点注册到集群，master和slave之间建立连接</li>
+<li>master执行mysqldump(good to have)，把最近一次的全量备份发送到slave</li>
+<li>并且从备份的时间点开始发送binlog</li>
+</ul>
+<hr>
+<h4 id="处理失效的节点"><a href="#处理失效的节点" class="headerlink" title="处理失效的节点"></a>处理失效的节点</h4><p><strong>从节点失效处理策略 — 追赶试恢复</strong></p>
+<ul>
+<li>slave查询最后一笔事务的事务id，然后连接到主节点</li>
+<li>主节根据事务id，找到对应的binlog，然后发送断开连接时发生的数据变更</li>
+</ul>
+<p><strong>master节点失效 —选举新的主节点</strong></p>
+<ul>
+<li>发送heart-beat，确认主节点是否存活</li>
+<li>在集群中选举新的主节点</li>
+<li>重新配置<ul>
+<li>建立新主节点和从节点之间的连接</li>
+<li>防止脑裂的情况</li>
+</ul>
+</li>
+</ul>
+<p><strong>可能存在的问题</strong></p>
+<ul>
+<li>如果新的主节点 并未收到所有主节点的数据。(还在接受旧主节点的binlog状态中)。</li>
+<li>宕机的主节点很快又上线，但他（还认为自己是主节点，没意识到改朝换代了）继续发送binlog，让其他slave进行同步</li>
+<li>这时候新的主节点就会很困惑，不知道是否要接受旧主节点的binlog写数据。<ul>
+<li>不写，违背了数据持久化的承诺</li>
+<li>写，这非常冲突</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>主节点宕机，选举出新的主节点。(新的主节点和旧的主节点之间，数据存在一定距离)</li>
+<li>新主节点的自增id落后于旧的节点。但是某些中间件已经同步了旧主节点的 <strong>那部分自增id的记录</strong></li>
+<li>这会导致一种数据泄露的问题</li>
+</ul>
+<hr>
+<ul>
+<li>脑裂</li>
+</ul>
+<hr>
+<h4 id="复制滞后的问题"><a href="#复制滞后的问题" class="headerlink" title="复制滞后的问题"></a>复制滞后的问题</h4><p><strong>马上读 — 好像数据丢失了</strong></p>
+<p>​    根据CAP理论，高可用性和一致性，只能选择一个。大多数分布式系统都是选择高可用性，因此会出现数据丢失的问题。</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183754202.png" srcset="/img/loading.gif" lazyload alt="1633183754202"></p>
+<p>​    解决马上读问题，一般常用的办法。</p>
+<ul>
+<li>如果用户访问会被修改的内容则从master节点读取；否则，从slave节点读取。 </li>
+<li>举个例子，在一个博客系统中，你编辑自己的文章并且发布，当然希望马上能读取，这时候我们从master节点拉自己的文章。但是读别的文章，就可以从slave上面进行读取</li>
+</ul>
+<hr>
+<ul>
+<li>客户端保存更新操作的timeStamp，发送请求时把这个东西附送上</li>
+<li>一个副本根据timeStamp读取数据，判断一下他的数据是否够新，如果不够新，就转发给下一个副本节点，从它那里取数据</li>
+</ul>
+<p><strong>单调读 — 两次读到的内容不一样</strong></p>
+<ul>
+<li>简单来说，第一次读，转发到某个节点上，该节点是最新的数据</li>
+<li>紧接着第二次请求，但是该请求转发到另外的节点上。该节点还没完成数据同步，因此读到旧版本的数据</li>
+</ul>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183769266.png" srcset="/img/loading.gif" lazyload alt="1633183769266"></p>
+<p><strong>顺序写入问题</strong></p>
+<ul>
+<li>某些记录之间存在顺序关系</li>
+<li>比如insert a，update a。这两个存在明显的顺序关系，但是可能因为网络等原因，到达从节点之间不一致什么的</li>
+</ul>
+<p>​    目前解决这类问题的办法，好像是通过一些拓扑算法，显式跟踪事件之间的因果关系。</p>
+<p><strong>实际开发中</strong></p>
+<p>​    如果在开发中，不是对数据滞后带来的后果无法容忍。一般都会忽略到他们，比如说，在更新头像这服务上面，很多时候更新头像是有延迟的，一段时间后才会真的让你更新成功。</p>
+<p>​    不然，如果不能忽略，上面的处理方案，都是要在应用层进行编写。这会给应用层的代码逻辑带来很大的挑战。</p>
+<h3 id="多主节点复制-—-数据中心"><a href="#多主节点复制-—-数据中心" class="headerlink" title="多主节点复制 — 数据中心"></a>多主节点复制 — 数据中心</h3><p>​    为了实现异地容灾，或者说缩短客户端和数据库的距离。通常把整个数据库集群做一个备份，每个备份作为一个数据中心。</p>
+<p>​    每个数据中间内部，都是采用主从复制。数据中心之间，采用多主节点复制。</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183815399.png" srcset="/img/loading.gif" lazyload alt="1633183815399"></p>
+<h4 id="如何处理写冲突"><a href="#如何处理写冲突" class="headerlink" title="如何处理写冲突"></a>如何处理写冲突</h4><p>​    多主从最大的问题就是容易产生写冲突。</p>
+<p>​    例如，两个用户同时编辑wiki页面。他们的操作都分别路由到两个不同数据中心，这是完全合法的操作。</p>
+<p>​    但是，两个数据中心进行merge的时候，则会出现冲突问题</p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183827053.png" srcset="/img/loading.gif" lazyload alt="1633183827053"></p>
+<p><strong>同步 和 异步 检测写冲突</strong></p>
+<p>​    如果是单主从模式下，只能有一个写，另外一个写操作会被阻塞。然而，在多主从这种架构之下，在数据中心的角度来看，每个写请求都是成功的。</p>
+<p>​    因此，每次写入操作都能完成，并且冲突只能异步地，在以后才进行一次检测。</p>
+<p>​    理论上，也不是不能进行同步检测。只需要像2PC一样，让一个节点出来充当monitor。但是会十分影响性能。</p>
+<p><strong>避免冲突</strong></p>
+<p>​    目前来说，处理写冲突的最好的方案就是避免冲突。<strong>把不同记录的修改，根据hash进行路由，这样不同数据中心之间”被修改的记录”就会交错，不会有重合部分，自然就不会有冲突</strong></p>
+<p><strong>Last Write Win — LWW</strong></p>
+<p>​    每个更新操作，附带一个时间戳。数据中心之间进行收敛的时候，根据时间戳进行复制。<strong>原则是，最新的记录要覆盖之前的记录</strong>。</p>
+<p>​    这样，数据中心最后会收敛到一致。</p>
+<h4 id="多主从的拓扑结构"><a href="#多主从的拓扑结构" class="headerlink" title="多主从的拓扑结构"></a>多主从的拓扑结构</h4><p>​    常见的拓扑结构有三种(1)环形 (2)星形 (3)全连接。<strong>一般来说，越复杂的拓扑结构。稳定性越高(指的是，不会因为关键节点宕机而整个网络瘫痪)</strong></p>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183836515.png" srcset="/img/loading.gif" lazyload alt="1633183836515"></p>
+<p><strong>问题</strong></p>
+<ul>
+<li>对于环形和星形的问题，其实很简单。跟计算机网络一样，如果某个<strong>crux节点宕机了，整个服务会受到相当大的影响</strong>。</li>
+<li>全连接网络其实也有很一些问题，主要是受到网络延迟的影响**(就是说，节点收到同一份binlog的时间可能是不一样的)**</li>
+</ul>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183848245.png" srcset="/img/loading.gif" lazyload alt="1633183848245"></p>
+<figure class="highlight n1ql"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></div></td><td class="code"><pre><code class="hljs n1ql">1.节点123 是不同的数据中心<br>2.客户端A <span class="hljs-keyword">insert</span>一条记录到节点<span class="hljs-number">1</span>。然后节点<span class="hljs-number">1</span> 把该记录同步到其他节点<br><span class="hljs-number">3.</span>节点<span class="hljs-number">3</span>，收到同步的记录。并且客户端B，对该记录进行<span class="hljs-keyword">update</span>。并且同步到别的节点。<br>(显然 <span class="hljs-keyword">insert</span> 和 updata是具有顺序关系的...)<br><span class="hljs-number">4.</span>万一，节点<span class="hljs-number">2</span>收到的信息是(<span class="hljs-keyword">update</span>，<span class="hljs-keyword">insert</span>)，那么就会发生错误。<br><br>问题解决办法：<br><span class="hljs-number">1.</span>为了使得日志消息正确有序，可以使用一种称为版本向量的技术。<br></code></pre></td></tr></table></figure>
+
+<h3 id="无主节点复制"><a href="#无主节点复制" class="headerlink" title="无主节点复制"></a>无主节点复制</h3><p>​    一些存储系统采用不同的设计思路：选择放弃主节点，所有副本能够直接接受写请求。<strong>换句话来说，所有节点都是主节点</strong>。 </p>
+<p>​    有一些无主节点系统的实现，每个节点都可以直接接收客户端的写请求。但有一些实现，会有一个协调者，他来统一进行管理。</p>
+<h4 id="节点失效时写入数据库"><a href="#节点失效时写入数据库" class="headerlink" title="节点失效时写入数据库"></a>节点失效时写入数据库</h4><p><strong>写数据的过程</strong></p>
+<ul>
+<li>假设某个数据库系统中，有三个节点。其中一个节点宕机下线了</li>
+<li>客户端直接发送写请求给到所有节点</li>
+<li>假设三个节点中，只有两个恢复ack。我们就认为他就是写入成功</li>
+</ul>
+<p><strong>读数据的过程</strong></p>
+<ul>
+<li>当一个客户端从数据库读取数据时，它不是向一个副本发送请求。而是并行发送多个副本。</li>
+<li>当客户端拿到结果后，根据投票或者版本号，来确认采用哪个副本的。</li>
+</ul>
+<h4 id="数据修复"><a href="#数据修复" class="headerlink" title="数据修复"></a>数据修复</h4><p>​    如果某个节点中途下线了，如何让他修复数据追赶上进度？</p>
+<p><strong>读修复</strong></p>
+<ul>
+<li>当客户端从三个副本那里拿到数据之后，假设拿到数据时(版本1，版本3，版本3)。</li>
+<li>monitor就会觉得版本1数据落后了，因此把版本3数据往该节点写入。</li>
+</ul>
+<p><img src="/../../images/%E6%B5%85%E8%B0%88%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/1633183867613.png" srcset="/img/loading.gif" lazyload alt="1633183867613"></p>
+<p><strong>反熵</strong></p>
+<ul>
+<li>后台有进程不断查找副本之间数据的差异</li>
+<li>并且会自动进行修复</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">浅谈数据库的锁(一)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/10/01/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-base/">
+                        <span class="hidden-mobile">MySQL基础架构 --- 一条语句是怎么执行的?</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>
