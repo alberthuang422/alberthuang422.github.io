@@ -4,7 +4,32 @@
   
   
   <entry>
-    <title>高级波段技术分析 --- 分析趋势2(突破的强度)</title>
+    <title>交易系统</title>
+    <link href="/2023/04/01/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/%E4%BA%A4%E6%98%93%E7%B3%BB%E7%BB%9F/"/>
+    <url>/2023/04/01/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/%E4%BA%A4%E6%98%93%E7%B3%BB%E7%BB%9F/</url>
+    
+    <content type="html"><![CDATA[<h2 id="（一）交易前先判断行情"><a href="#（一）交易前先判断行情" class="headerlink" title="（一）交易前先判断行情"></a>（一）交易前先判断行情</h2><p>​    <strong>因为震荡以及趋势的交易方法不一样，所以在交易前应该分析。</strong></p><ul><li><p>分析是否处于趋势</p><ul><li>分析均线是否发散排列。</li><li>并且在120根K线内没有太多的重叠。</li><li>K线影线短，实体长，顺势方向K线多。</li></ul></li><li><p>分析是否处于区间</p><ul><li>价格在一个区间内往返两次，市场就是处于箱体中</li></ul></li><li><p>无须波动</p><ul><li>扩散的震荡</li></ul></li></ul><p>市场环境就只有这几种，每一种都有不同的交易逻辑。</p><table><thead><tr><th>交易类型</th><th align="left">建议</th></tr></thead><tbody><tr><td>区间交易</td><td align="left">不要在区间中追涨杀跌；在做区间突破中，如果突破K线后，有反向K线，不要做</td></tr><tr><td>趋势交易</td><td align="left">可以在急速中小仓位买入；可以在回调中买入；可以在突破中买入（但是这里有可能突破失败，演变交易区间）</td></tr><tr><td>无序震荡</td><td align="left">退出交易</td></tr></tbody></table><h2 id="（二）分析关键点"><a href="#（二）分析关键点" class="headerlink" title="（二）分析关键点"></a>（二）分析关键点</h2><ul><li>看波段点突破之后的回测情况，如果形成支阻互换则很好</li><li>观测关键水平位</li></ul><h2 id="（三）形态结构"><a href="#（三）形态结构" class="headerlink" title="（三）形态结构"></a>（三）形态结构</h2><p>​    除非在趋势初期，可以直接追进去，不然挂单都要配合形态</p><ul><li><p>趋势的两段式回调</p></li><li><p>楔形回调</p></li><li><p>平行通道</p></li><li><p>双重顶底</p></li></ul><h2 id="（四）入场信号"><a href="#（四）入场信号" class="headerlink" title="（四）入场信号"></a>（四）入场信号</h2><ul><li>突破十字星 <strong>趋势K线、突破K线后的十字星</strong></li><li>内包十字星突破</li><li>双十字星突破</li><li>突破窄幅交易区间</li><li>高2低2</li><li>创新高失败</li><li>强势外包K <strong>（如果重叠程度很高，放弃）</strong></li></ul><p>这里上面说的都是顺势信号。</p><p>如果是做突破，一定要怂。<strong>任何好的交易，入场之后一定是很快有浮盈的，场内交易者都是很有信心的。如果突破后在几根K线内失败，先把止损挂到开仓的地方。</strong></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>交易</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>交易复盘</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>高级波段技术分析 --- 分析趋势3</title>
     <link href="/2023/03/18/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E5%88%86%E6%9E%90%E8%B6%8B%E5%8A%BF-%E5%88%A4%E6%96%AD%E7%AA%81%E7%A0%B4%E7%9A%84%E5%8A%9B%E9%87%8F/"/>
     <url>/2023/03/18/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E5%88%86%E6%9E%90%E8%B6%8B%E5%8A%BF-%E5%88%A4%E6%96%AD%E7%AA%81%E7%A0%B4%E7%9A%84%E5%8A%9B%E9%87%8F/</url>
     
@@ -29,7 +54,7 @@
   
   
   <entry>
-    <title>高级波段技术分析 --- 分析趋势2(突破的强度)</title>
+    <title>高级波段技术分析 --- 分析趋势2</title>
     <link href="/2023/03/18/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E5%88%86%E6%9E%90%E8%B6%8B%E5%8A%BF-%E6%9C%80%E5%88%9D%E7%AA%81%E7%A0%B4/"/>
     <url>/2023/03/18/%E4%BA%A4%E6%98%93%E7%9B%B8%E5%85%B3/%E5%88%86%E6%9E%90%E8%B6%8B%E5%8A%BF-%E6%9C%80%E5%88%9D%E7%AA%81%E7%A0%B4/</url>
     
@@ -96,31 +121,6 @@
     <tags>
       
       <tag>交易相关</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>交易系统</title>
-    <link href="/2023/02/18/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/%E4%BA%A4%E6%98%93%E7%B3%BB%E7%BB%9F/"/>
-    <url>/2023/02/18/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/%E4%BA%A4%E6%98%93%E7%B3%BB%E7%BB%9F/</url>
-    
-    <content type="html"><![CDATA[<h2 id="（一）交易前先判断行情"><a href="#（一）交易前先判断行情" class="headerlink" title="（一）交易前先判断行情"></a>（一）交易前先判断行情</h2><p>​    <strong>因为震荡以及趋势的交易方法不一样，所以在交易前应该分析。</strong></p><ul><li><p>分析是否处于趋势</p><ul><li>分析均线是否发散排列。</li><li>并且在120根K线内没有太多的重叠。</li><li>K线影线短，实体长，顺势方向K线多。</li></ul></li><li><p>分析是否处于区间</p><ul><li>价格在一个区间内往返两次，市场就是处于箱体中</li></ul></li><li><p>无须波动</p><ul><li>扩散的震荡</li></ul></li></ul><p>市场环境就只有这几种，每一种都有不同的交易逻辑。</p><table><thead><tr><th>交易类型</th><th align="left">建议</th></tr></thead><tbody><tr><td>区间交易</td><td align="left">不要在区间中追涨杀跌；在做区间突破中，如果突破K线后，有反向K线，不要做</td></tr><tr><td>趋势交易</td><td align="left">可以在急速中小仓位买入；可以在回调中买入；可以在突破中买入（但是这里有可能突破失败，演变交易区间）</td></tr><tr><td>无序震荡</td><td align="left">退出交易</td></tr></tbody></table><h2 id="（二）分析关键点"><a href="#（二）分析关键点" class="headerlink" title="（二）分析关键点"></a>（二）分析关键点</h2><ul><li>看波段点突破之后的回测情况，如果形成支阻互换则很好</li><li>观测关键水平位</li></ul><h2 id="（三）形态结构"><a href="#（三）形态结构" class="headerlink" title="（三）形态结构"></a>（三）形态结构</h2><p>​    除非在趋势初期，可以直接追进去，不然挂单都要配合形态</p><ul><li><p>趋势的两段式回调</p></li><li><p>楔形回调</p></li><li><p>平行通道</p></li><li><p>双重顶底</p></li></ul><h2 id="（四）入场信号"><a href="#（四）入场信号" class="headerlink" title="（四）入场信号"></a>（四）入场信号</h2><ul><li>突破十字星 <strong>趋势K线、突破K线后的十字星</strong></li><li>内包十字星突破</li><li>双十字星突破</li><li>突破窄幅交易区间</li><li>高2低2</li><li>创新高失败</li><li>强势外包K <strong>（如果重叠程度很高，放弃）</strong></li></ul><p>这里上面说的都是顺势信号。</p><p>如果是做突破，一定要怂。<strong>任何好的交易，入场之后一定是很快有浮盈的，场内交易者都是很有信心的。如果突破后在几根K线内失败，先把止损挂到开仓的地方。</strong></p>]]></content>
-    
-    
-    <categories>
-      
-      <category>交易</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>交易复盘</tag>
       
     </tags>
     
