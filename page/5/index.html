@@ -191,59 +191,6 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2021/10/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/" target="_self">
-          <img src="/img/database.jpeg" srcset="/img/loading.gif" lazyload alt="数据库的隔离性">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/10/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/" target="_self">
-          数据库的隔离性
-        </a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2021/10/05/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/MySQL%E7%9A%84%E9%9A%94%E7%A6%BB%E6%80%A7/" target="_self">
-          
-          本文主要讲解数据库的隔离性，以及原理
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-10-05 22:46" pubdate>
-              2021-10-05
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/MySQL/">MySQL</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2021/10/04/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9B%B8%E5%85%B3/%E7%BB%93%E5%90%88%E5%86%85%E6%A0%B8%E6%80%81%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%BB%93%E6%9E%84%E8%B0%88%E8%B0%88-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E6%AF%94%E8%BF%9B%E7%A8%8B%E5%BF%AB/" target="_self">
           <img src="/img/code.png" srcset="/img/loading.gif" lazyload alt="结合内核态和线程结构谈谈 --- 为什么线程切换比进程快?">
         </a>
@@ -453,6 +400,59 @@
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
             <time datetime="2021-10-02 22:47" pubdate>
+              2021-10-02
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/MySQL/">MySQL</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/" target="_self">
+          <img src="/img/database.jpeg" srcset="/img/loading.gif" lazyload alt="浅谈数据库的锁(一)">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/" target="_self">
+          浅谈数据库的锁(一)
+        </a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2021/10/02/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9B%B8%E5%85%B3/mysql-lock/" target="_self">
+          
+          全局锁和表锁 — server层全局锁​    顾名思义，全局锁就是给整个数据库实例进行加锁。命令是Flush tables with read lock。 ​    当需要整个数据库进入只读状态时，就用这个命令。一般来说,只有全局备份才会使用这个命令，但即使是做全局备份，我也不推荐使用这个锁。 ​    因为对全局加锁，带来的坏处很多很多。  对全局进行加锁，那么基本上所有操作都会被阻塞，通常情
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-10-02 22:43" pubdate>
               2021-10-02
             </time>
           </div>
