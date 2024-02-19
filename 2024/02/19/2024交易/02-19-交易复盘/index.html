@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.jpg">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="albertHuang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="分析了一下持仓的几只股票">
+<meta property="og:type" content="article">
+<meta property="og:title" content="24-02 交易复盘">
+<meta property="og:url" content="http://example.com/2024/02/19/2024%E4%BA%A4%E6%98%93/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/index.html">
+<meta property="og:site_name" content="黄成彬的博客">
+<meta property="og:description" content="分析了一下持仓的几只股票">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/trade.jpeg">
+<meta property="article:published_time" content="2024-02-19T03:18:31.000Z">
+<meta property="article:modified_time" content="2024-02-19T08:13:35.262Z">
+<meta property="article:author" content="albertHuang">
+<meta property="article:tag" content="交易复盘">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/trade.jpeg">
+  
+  
+  <title>24-02 交易复盘 - 黄成彬的博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":5},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>cb的博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/cat.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="24-02 交易复盘">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      albertHuang
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-02-19 11:18" pubdate>
+        2024年2月19日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.1k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      27 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">24-02 交易复盘</h1>
+            
+            <div class="markdown-body">
+              <h1 id="持仓"><a href="#持仓" class="headerlink" title="持仓"></a>持仓</h1><h2 id="PDD"><a href="#PDD" class="headerlink" title="PDD"></a>PDD</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219125150748.png" srcset="/img/loading.gif" lazyload alt="PDD-日线"></p>
+<h3 id="1、基本面分析简要："><a href="#1、基本面分析简要：" class="headerlink" title="1、基本面分析简要："></a>1、基本面分析简要：</h3><ol>
+<li><strong>阿里巴巴</strong>的财报显示业绩不佳，增长速度明显放缓。</li>
+<li><strong>段永平</strong>在第四季度对拼多多(PDD)进行了轻微的减仓。</li>
+<li>相反，<strong>景林资本</strong>在第四季度增加了对拼多多的持股。</li>
+</ol>
+<h3 id="2、技术分析概述"><a href="#2、技术分析概述" class="headerlink" title="2、技术分析概述"></a>2、技术分析概述</h3><figure class="highlight gcode"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><pre><code class="hljs gcode">简单回顾上一次的分析，主要观察两个地方<br><span class="hljs-comment">(1)</span>下跌到<span class="hljs-number">120</span>的时候观察价格行为<br><span class="hljs-comment">(2)</span>上涨的时候观察<span class="hljs-number">130</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>在价格下跌至120和上涨至130的关键节点，进行了重点观察。120具有三重重要性：上方盘整区域下跌的等距目标，回补了跳空上涨的支撑位，以及周线级别ema20的支撑位。</li>
+<li>在K1时刻，120点位经历了一次<strong>放量十字星的测试</strong>，尽管这不是最佳的止跌信号，但促使部分空头开始止盈。<ul>
+<li>观察到K1的第二天，PDD跳空上涨，开始平掉手里一半的空单</li>
+</ul>
+</li>
+<li>阿里的不佳财报发布后，PDD在K3时刻实现反弹，但130的压力仍旧存在，<strong>高量SOW并没有被收服</strong>。尽管后续回调幅度有限，但仍以观望态度对待，关注130突破的力度。<ul>
+<li>但是这里有一个好的地方是，K3后的回调力量都是很低</li>
+<li>因此当时的选择依然是观望，看看是以何种力度突破130，再把手里一半的空单平掉</li>
+<li>再第三天，强势突破130以后，手里空单已经完全平仓</li>
+</ul>
+</li>
+</ul>
+<p><strong>以上就是在135开的空单平仓逻辑</strong></p>
+<ul>
+<li>开始于K1的上涨行情，最高触及140，表现出较好的市场行为<ul>
+<li>微型通道上涨，并没有太多的重叠K线</li>
+<li>没有太多的上影线</li>
+<li><strong>受到138-140的压制（SOW的高点）</strong></li>
+<li><strong>目前为止并没有安全的形态买入</strong></li>
+</ul>
+</li>
+<li>但是从成交量分析显示，这次的上涨有一些忧虑的地方<ul>
+<li>上涨的时候成交量很低，没有较高的成交量，买入力量有点弱</li>
+<li>从盘口看出，资金跟上涨出现了背离 <ul>
+<li><code>这种情况下，虽然市场调整期间资金的流入并非立即发生，一般在股价上涨阶段才会观察到资金流入，但当前的资金流向仍引发了对多头陷阱的担忧。这种背离现象可能预示着市场上涨缺乏实质性的资金支持，因而投资者在进行买入决策时需格外谨慎，以避免进入可能的多头陷阱。正确的做法是密切关注市场动态和资金流向的进一步变化，结合其他市场分析工具和指标，来做出更加全面和谨慎的投资决策。</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结</strong>：目前初步收服了当时利空的恐慌，<u>但是仍然没有安全的买入点，没有看到真正的买家进场的迹象</u>。</p>
+<h3 id="3、交易策略规划"><a href="#3、交易策略规划" class="headerlink" title="3、交易策略规划"></a>3、交易策略规划</h3><p>​    当前，股价已经稳定在ema20日均线之上，且周线级别同样得到了ema20的支撑。<strong>基于此，交易策略倾向于寻找回调期间的买入机会</strong>，而非进行做空操作。</p>
+<ol>
+<li><strong>理想调整方案</strong>：若价格能够在133点以上区域横盘整理，持续大约10天左右，这样的调整将被视为寻找突破买入点的良机。</li>
+<li><strong>中等调整方案</strong>：如果价格跌破ema20日均线支撑，并在128至130区域内震荡，若此时下跌动能衰竭，应考虑在此区间寻找买入机会，但需要严格设置止损以控制风险。</li>
+<li><strong>较差的调整情形</strong>：若股价跌破128点，应在120点附近留意是否有明显的止跌信号出现，此时可以考虑买入。</li>
+<li><strong>不利情况</strong>：如果股价跌破120点，短期内将不考虑买入机会。</li>
+</ol>
+<p>综上所述，交易策略将基于对价格行为和支撑位的观察，灵活调整买入点和止损策略，以应对市场的不同调整情况。</p>
+<h2 id="XBI"><a href="#XBI" class="headerlink" title="XBI"></a>XBI</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219135318542.png" srcset="/img/loading.gif" lazyload alt="XBI-日线"></p>
+<h3 id="1、基本面分析简要：-1"><a href="#1、基本面分析简要：-1" class="headerlink" title="1、基本面分析简要："></a>1、基本面分析简要：</h3><p>XBI主要包括未盈利的小盘生物科技股，它们对加息和降息的反应尤为敏感：</p>
+<ul>
+<li><strong>加息</strong>提高了这些公司的融资成本，减少了投资者对它们的兴趣，对股价产生压力。</li>
+<li><strong>降息预期</strong>则降低融资成本，有利于融资和并购活动，对股价支持性强。</li>
+<li>最近，<strong>CPI超预期</strong>破坏了三月份的降息预期，将首次降息推迟至五月的可能性降至80%，增加了市场不确定性，对这些股票短期内不利。</li>
+</ul>
+<h3 id="2、技术分析概述-1"><a href="#2、技术分析概述-1" class="headerlink" title="2、技术分析概述"></a>2、技术分析概述</h3><ul>
+<li><p>回顾上一次的分析，在一月底的FOMC会议中，鲍威尔碾碎了三月份降息的预期。价格波动比较大，连续下跌三天至K1。</p>
+<ul>
+<li>K1的大成交量与小实体表明，<strong>空头虽有尝试推动价格，但未显成效</strong>，反映出市场努力未能明确改变趋势，显示买卖力量僵持。</li>
+<li>K1处于ema20均线的下方</li>
+</ul>
+</li>
+<li><p>价格在三角形区域内震荡后，<strong>自K2起上涨形成连续三高</strong>，顺利突破收敛三角区，<strong>成交量也支持上涨</strong>，显示出良好的上涨质量。</p>
+</li>
+<li><p>价格成功突破箱体和收敛三角形，<strong>但K3时CPI大幅超预期</strong>，导致成交量激增、出现倍量大阴线，下跌4%。</p>
+<ul>
+<li>当时手里有400delta的现货期权组合，平掉了200delta的现货</li>
+</ul>
+</li>
+<li><p>但是K3的影响并没有持续，价格在很短时间内就收复了失地，并且即将挑战前期的高点94。</p>
+<ul>
+<li>在看到影响没有扩散的时候，重新加仓，持有550单位的delta。</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结：</strong>趋势健康，即将突破，但是担心美股大盘的调整影响，考虑到23年的行情XBI跟随大盘，存在一定的短期回调风险。</p>
+<h3 id="3、交易策略规划-1"><a href="#3、交易策略规划-1" class="headerlink" title="3、交易策略规划"></a>3、交易策略规划</h3><p>​    <strong>突破高点则加仓300delta；回调则观望，耐心等待。</strong></p>
+<h2 id="Bitcoin-和-Marathon-Digital"><a href="#Bitcoin-和-Marathon-Digital" class="headerlink" title="Bitcoin 和 Marathon Digital"></a>Bitcoin 和 Marathon Digital</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219144653532.png" srcset="/img/loading.gif" lazyload alt="Bitcoin-日线"></p>
+<h3 id="1、基本面分析简要：-2"><a href="#1、基本面分析简要：-2" class="headerlink" title="1、基本面分析简要："></a>1、基本面分析简要：</h3><ol>
+<li>灰度的抛压基本消化</li>
+<li>bitcoin ETF资金持续流入加密市场</li>
+</ol>
+<h3 id="2、技术分析概述："><a href="#2、技术分析概述：" class="headerlink" title="2、技术分析概述："></a>2、技术分析概述：</h3><ul>
+<li><p>K1前一天，SOW表现不错，尝试在价格突破40000的时候做空，在K1插针后迅速保本平仓。</p>
+</li>
+<li><p>K1后三天，价格始终在4000支撑位下方，但是<strong>缩量短K小实体</strong></p>
+<ul>
+<li>复盘过很多次在突破后发生这种情况，这是很好的止跌信号</li>
+<li>这种时候突破单就要小心了，价格很有可能拉回区间之内</li>
+</ul>
+</li>
+<li><p>K2开始在43000的位置遇阻，成交量开始放大，K线具有较长的上影线。</p>
+<ul>
+<li>按照当时的信息来判断，bitcoin的走势偏弱，开始于K1的上涨受到了挑战。</li>
+<li>准备在突破K2的前一天的长阳处做空</li>
+</ul>
+</li>
+<li><p>K2后，市场进入低成交量横盘调整，价格保持在ema20之上，形态逐渐形成收敛三角。</p>
+<ul>
+<li><strong>因为横盘太久了，一直无法突破长阳SOS</strong>，这时候做空的想法已经被严重削弱了。之前是强烈看空，变成了很中性，偏空</li>
+<li>这种情况<strong>上涨和下跌的概率都是五五开</strong>，于是选择在该位置 双开了mara期权，选择做多了波动率</li>
+</ul>
+</li>
+<li><p>突破收敛三角后，价格迅速突破拉高至53000。<strong>按照目前的量价来说，除了有点超买以外，量价都没有任何疲态。</strong></p>
+</li>
+</ul>
+<h3 id="3、交易策略规划-2"><a href="#3、交易策略规划-2" class="headerlink" title="3、交易策略规划"></a>3、交易策略规划</h3><p>​    趋势中坚定持有，在任何回调中买入，少操作就是最好的操作。</p>
+<ul>
+<li>短期内关注47000左右的位置，有给就加仓，没给就躺平</li>
+</ul>
+<h1 id="重点关注"><a href="#重点关注" class="headerlink" title="重点关注"></a>重点关注</h1><h2 id="ARKK"><a href="#ARKK" class="headerlink" title="ARKK"></a>ARKK</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219145039820.png" srcset="/img/loading.gif" lazyload alt="ARKK-周线"></p>
+<p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219151356111.png" srcset="/img/loading.gif" lazyload alt="ARKK-日线"></p>
+<h3 id="1、基本面分析简要：-3"><a href="#1、基本面分析简要：-3" class="headerlink" title="1、基本面分析简要："></a>1、基本面分析简要：</h3><p>​    ARKK是创新型的中小盘股，基本面的影响参考XBI。还有一些行业的周期，该etf重仓有coin，tesla。</p>
+<h3 id="2、技术分析概述：-1"><a href="#2、技术分析概述：-1" class="headerlink" title="2、技术分析概述："></a>2、技术分析概述：</h3><ul>
+<li><p>大级别来看，正在尝试突破两年的交易区间。</p>
+</li>
+<li><p>日线的vegas均线，即将进行金叉；日线的ma30，ma60，ma120均线正在纠缠状态，准备向上扩散。</p>
+</li>
+<li><p>日线级别前一段时间的拉升很强势，回调的也很好。测试底部的几根K线量价都不错</p>
+<ul>
+<li>K1，放量中等实体阴线，后续没有力量跟随</li>
+<li>K2，放量短K，后续没有力量跟随</li>
+<li>K3，放量中等阴线，后面被缩量K收复</li>
+<li><strong>表明卖出力量并没有破坏上涨的秩序</strong></li>
+</ul>
+</li>
+<li><p>形态来看K1，K2，K3组成了一个higher low，形态来看很好。是一个很有价值的形态</p>
+</li>
+</ul>
+<h3 id="3、交易策略规划-3"><a href="#3、交易策略规划-3" class="headerlink" title="3、交易策略规划"></a>3、交易策略规划</h3><p>​    等待突破，可以左侧抄底1～2U单位的ARKK</p>
+<ul>
+<li>回调买入，在48左右的时候，看是否受到ema20以及前方盘整的支撑</li>
+<li>突破前方高点的时候挂突破单，但是要看看突破后是否有停滞</li>
+</ul>
+<h2 id="TME"><a href="#TME" class="headerlink" title="TME"></a>TME</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219151444571.png" srcset="/img/loading.gif" lazyload alt="TME-周线"></p>
+<h3 id="1、基本面分析简要：-4"><a href="#1、基本面分析简要：-4" class="headerlink" title="1、基本面分析简要："></a>1、基本面分析简要：</h3><ul>
+<li>TME作为小盘股，受加息降息政策影响较大。</li>
+<li>作为中概股，中美关系直接影响其表现。近期中概资产虽弱势，但出现止跌迹象。</li>
+<li>在线音乐业务增长比较快，社交业务止跌，营收结构更健康</li>
+</ul>
+<h3 id="2、技术分析概述：-2"><a href="#2、技术分析概述：-2" class="headerlink" title="2、技术分析概述："></a>2、技术分析概述：</h3><ul>
+<li>大级别已经突破了两年的双底，9.3该位置还是一个支撑阻力互换的位置，有重要意义。<ul>
+<li>但是这周的K线比较难看，插了一根针，参考bitcoin。比较不希望突破的时候出现这种情况</li>
+</ul>
+</li>
+<li>日线显示，股价在阻力位下方高位震荡后向上突破，呈现出良好的整理形态。虽然突破力度不是非常强劲，但表现仍然不错。<ul>
+<li>K1，放量阴线，看是否能够很快收复</li>
+</ul>
+</li>
+</ul>
+<h3 id="3、交易策略规划-4"><a href="#3、交易策略规划-4" class="headerlink" title="3、交易策略规划"></a>3、交易策略规划</h3><p>​    目前来看，日线不算特别强。考虑在9.8 或者 9.3买入两个单位。</p>
+<h2 id="XIAOMI"><a href="#XIAOMI" class="headerlink" title="XIAOMI"></a>XIAOMI</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219161016993.png" srcset="/img/loading.gif" lazyload alt="小米-周线"></p>
+<h3 id="1、交易策略规划"><a href="#1、交易策略规划" class="headerlink" title="1、交易策略规划"></a>1、交易策略规划</h3><ul>
+<li>12.3左右可以买入一个单位</li>
+<li>现在买入也可以，当挂个彩票</li>
+</ul>
+<h2 id="DIS"><a href="#DIS" class="headerlink" title="DIS"></a>DIS</h2><p><img src="/../../images/02-19-%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/image-20240219161142458.png" srcset="/img/loading.gif" lazyload alt="DIS-日线"></p>
+<h3 id="1、交易策略规划-1"><a href="#1、交易策略规划-1" class="headerlink" title="1、交易策略规划"></a>1、交易策略规划</h3><p>​    有可能开启一段行情，先观察一下。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E4%BA%A4%E6%98%93/">交易</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/">交易复盘</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/31/2024%E4%BA%A4%E6%98%93/01-31-1%E6%9C%88%E4%BA%A4%E6%98%93%E5%A4%8D%E7%9B%98/">
+                        <span class="hidden-mobile">24-01 交易复盘</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  
+    <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>
